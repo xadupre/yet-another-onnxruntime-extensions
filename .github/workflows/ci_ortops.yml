@@ -1,0 +1,51 @@
+name: ci-2-ortops
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ortops_tests:
+    name: ortops (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: pip install -e .[dev]
+
+      - name: pip freeze
+        run: pip freeze
+
+      - name: Configure cmake
+        run: cmake -S cmake -B _build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build custom ops
+        run: cmake --build _build --config Release
+
+      - name: Run ortops tests
+        run: pytest --cov=yaourt --cov-report=xml --durations=10 unittests/ortops
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: ortops

@@ -7,6 +7,7 @@ skipped when the library is absent.
 """
 
 import os
+import platform
 import unittest
 
 import numpy
@@ -15,7 +16,14 @@ from yaourt.ext_test_case import ExtTestCase, requires_onnxruntime
 
 # Path to the shared library produced by the cmake build.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_LIB_PATH = os.path.join(_REPO_ROOT, "ortops", "optim", "cpu", "libortops_optim_cpu.so")
+_SYSTEM = platform.system()
+if _SYSTEM == "Windows":
+    _LIB_NAME = "ortops_optim_cpu.dll"
+elif _SYSTEM == "Darwin":
+    _LIB_NAME = "libortops_optim_cpu.dylib"
+else:
+    _LIB_NAME = "libortops_optim_cpu.so"
+_LIB_PATH = os.path.join(_REPO_ROOT, "ortops", "optim", "cpu", _LIB_NAME)
 _OP_DOMAIN = "yaourt.ortops.optim.cpu"
 
 
