@@ -16,7 +16,7 @@ from yaourt.ext_test_case import ExtTestCase, requires_onnxruntime
 # Path to the shared library produced by the cmake build.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _LIB_PATH = os.path.join(_REPO_ROOT, "ortops", "optim", "cpu", "libortops_optim_cpu.so")
-_OP_DOMAIN = "onnx_extended.ortops.optim.cpu"
+_OP_DOMAIN = "yaourt.ortops.optim.cpu"
 
 
 def _lib_available() -> bool:

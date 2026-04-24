@@ -1,7 +1,7 @@
 #
-# module: onnx_extended.ortops.optim.cpu (DenseToSparse, SparseToDense)
+# module: yaourt.ortops.optim.cpu (DenseToSparse, SparseToDense)
 #
-message(STATUS "+ KERNEL onnx_extended.ortops.optim.cpu")
+message(STATUS "+ KERNEL yaourt.ortops.optim.cpu")
 
 ort_add_custom_op(
   ortops_optim_cpu
