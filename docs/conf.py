@@ -22,8 +22,13 @@ extensions = [
 exclude_patterns = ["_build"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
+html_logo = "_static/logo.svg"
 html_theme_options = {
-    "github_url": "https://github.com/xadupre/yet-another-onnxruntime-extensions"
+    "github_url": "https://github.com/xadupre/yet-another-onnxruntime-extensions",
+    "logo": {
+        "image_light": "_static/logo.svg",
+        "image_dark": "_static/logo.svg",
+    },
 }
 
 intersphinx_mapping = {
