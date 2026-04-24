@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 import onnx
-from yobx.ext_test_case import (
+from yaourt.ext_test_case import (
     ExtTestCase,
     requires_matplotlib,
     skipif_ci_windows,
@@ -28,7 +28,7 @@ class TestDocMatplotlib(ExtTestCase):
 
     def test_plot_legend_returns_axes(self):
         import matplotlib.axes
-        from yobx.doc import plot_legend
+        from yaourt.doc import plot_legend
 
         self.assertEqual(sys.platform, "linux")
 
@@ -38,14 +38,14 @@ class TestDocMatplotlib(ExtTestCase):
 
     def test_plot_legend_with_text_bottom(self):
         import matplotlib.axes
-        from yobx.doc import plot_legend
+        from yaourt.doc import plot_legend
 
         ax = plot_legend("LABEL", text_bottom="bottom text", color="blue", fontsize=12)
         self.assertIsInstance(ax, matplotlib.axes.Axes)
         self.plt.close("all")
 
     def test_rotate_align_returns_axes(self):
-        from yobx.doc import rotate_align
+        from yaourt.doc import rotate_align
 
         _fig, ax = self.plt.subplots()
         ax.bar(["a", "b", "c"], [1, 2, 3])
@@ -54,7 +54,7 @@ class TestDocMatplotlib(ExtTestCase):
         self.plt.close("all")
 
     def test_rotate_align_custom_angle_and_align(self):
-        from yobx.doc import rotate_align
+        from yaourt.doc import rotate_align
 
         _fig, ax = self.plt.subplots()
         ax.bar(["x", "y"], [1, 2])
@@ -66,7 +66,7 @@ class TestDocMatplotlib(ExtTestCase):
         self.plt.close("all")
 
     def test_save_fig_creates_file(self):
-        from yobx.doc import save_fig
+        from yaourt.doc import save_fig
 
         _fig, ax = self.plt.subplots()
         ax.plot([1, 2, 3])
@@ -82,7 +82,7 @@ class TestDocMatplotlib(ExtTestCase):
         self.plt.close("all")
 
     def test_title_sets_title(self):
-        from yobx.doc import title
+        from yaourt.doc import title
 
         _fig, ax = self.plt.subplots()
         result = title(ax, "My Title")
@@ -92,7 +92,7 @@ class TestDocMatplotlib(ExtTestCase):
 
     def test_plot_histogram_returns_axes(self):
         import matplotlib.axes
-        from yobx.doc import plot_histogram
+        from yaourt.doc import plot_histogram
 
         data = np.random.default_rng(0).standard_normal(100)
         ax = plot_histogram(data)
@@ -100,7 +100,7 @@ class TestDocMatplotlib(ExtTestCase):
         self.plt.close("all")
 
     def test_plot_histogram_with_axes(self):
-        from yobx.doc import plot_histogram
+        from yaourt.doc import plot_histogram
 
         data = np.random.default_rng(0).standard_normal(50)
         _fig, ax = self.plt.subplots()
@@ -113,23 +113,23 @@ class TestDocMatplotlib(ExtTestCase):
 @skipif_ci_apple("too long")
 class TestDocVersionHelpers(ExtTestCase):
     def test_update_version_package_same_major(self):
-        from yobx.doc import update_version_package
+        from yaourt.doc import update_version_package
 
-        with patch("yobx.doc.get_latest_pypi_version", return_value="1.2.3"):
+        with patch("yaourt.doc.get_latest_pypi_version", return_value="1.2.3"):
             result = update_version_package("1.2.5")
         self.assertEqual(result, "1.2.5")
 
     def test_update_version_package_different_major(self):
-        from yobx.doc import update_version_package
+        from yaourt.doc import update_version_package
 
-        with patch("yobx.doc.get_latest_pypi_version", return_value="1.2.3"):
+        with patch("yaourt.doc.get_latest_pypi_version", return_value="1.2.3"):
             result = update_version_package("2.0.0")
         self.assertEqual(result, "2.0.dev")
 
     def test_update_version_package_returns_dev_suffix(self):
-        from yobx.doc import update_version_package
+        from yaourt.doc import update_version_package
 
-        with patch("yobx.doc.get_latest_pypi_version", return_value="0.1.0"):
+        with patch("yaourt.doc.get_latest_pypi_version", return_value="0.1.0"):
             result = update_version_package("0.2.0")
         self.assertEqual(result, "0.2.dev")
 
@@ -138,13 +138,13 @@ class TestDocVersionHelpers(ExtTestCase):
 @skipif_ci_apple("too long")
 class TestRunSubprocess(ExtTestCase):
     def test_run_subprocess_captures_stdout(self):
-        from yobx.doc import _run_subprocess
+        from yaourt.doc import _run_subprocess
 
         result = _run_subprocess([sys.executable, "-c", "print('hello')"])
         self.assertIn("hello", result)
 
     def test_run_subprocess_captures_stderr(self):
-        from yobx.doc import _run_subprocess
+        from yaourt.doc import _run_subprocess
 
         result = _run_subprocess(
             [sys.executable, "-c", "import sys; sys.stderr.write('err_msg\\n')"]
@@ -155,7 +155,7 @@ class TestRunSubprocess(ExtTestCase):
         # Verify that _run_subprocess does not deadlock when the subprocess
         # writes a large amount of data to stderr (more than the pipe buffer
         # ~64 KB), while writing nothing to stdout.
-        from yobx.doc import _run_subprocess
+        from yaourt.doc import _run_subprocess
 
         # Write 200 KB to stderr, nothing to stdout — the old line-by-line
         # stdout reader would deadlock here; communicate() handles it safely.
@@ -166,7 +166,7 @@ class TestRunSubprocess(ExtTestCase):
         self.assertGreater(len(result), 100_000)
 
     def test_run_subprocess_raises_on_build_error(self):
-        from yobx.doc import _run_subprocess
+        from yaourt.doc import _run_subprocess
 
         # A script that prints a "fatal error" to stdout AND writes to stderr
         # should cause _run_subprocess to raise RuntimeError.
@@ -181,19 +181,19 @@ class TestRunSubprocess(ExtTestCase):
 
 class TestDocDemoMlpModel(ExtTestCase):
     def test_demo_mlp_model_returns_model_proto(self):
-        from yobx.doc import demo_mlp_model
+        from yaourt.doc import demo_mlp_model
 
         model = demo_mlp_model("")
         self.assertIsInstance(model, onnx.ModelProto)
 
     def test_demo_mlp_model_graph_has_five_nodes(self):
-        from yobx.doc import demo_mlp_model
+        from yaourt.doc import demo_mlp_model
 
         model = demo_mlp_model("")
         self.assertEqual(len(model.graph.node), 5)
 
     def test_demo_mlp_model_op_types(self):
-        from yobx.doc import demo_mlp_model
+        from yaourt.doc import demo_mlp_model
 
         model = demo_mlp_model("")
         ops = [n.op_type for n in model.graph.node]
@@ -202,7 +202,7 @@ class TestDocDemoMlpModel(ExtTestCase):
         self.assertIn("Relu", ops)
 
     def test_demo_mlp_model_input_output(self):
-        from yobx.doc import demo_mlp_model
+        from yaourt.doc import demo_mlp_model
 
         model = demo_mlp_model("")
         self.assertEqual(len(model.graph.input), 1)
@@ -211,7 +211,7 @@ class TestDocDemoMlpModel(ExtTestCase):
         self.assertEqual(model.graph.output[0].name, "output_0")
 
     def test_demo_mlp_model_initializers(self):
-        from yobx.doc import demo_mlp_model
+        from yaourt.doc import demo_mlp_model
 
         model = demo_mlp_model("")
         self.assertEqual(len(model.graph.initializer), 4)
@@ -232,14 +232,14 @@ class TestDocPlotText(ExtTestCase):
 
     def test_plot_text_returns_axes(self):
         import matplotlib.axes
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         ax = plot_text("line one\nline two")
         self.assertIsInstance(ax, matplotlib.axes.Axes)
         self.plt.close("all")
 
     def test_plot_text_uses_provided_axes(self):
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         _fig, ax = self.plt.subplots()
         result = plot_text("hello", ax=ax)
@@ -247,7 +247,7 @@ class TestDocPlotText(ExtTestCase):
         self.plt.close("all")
 
     def test_plot_text_sets_title(self):
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         ax = plot_text("content", title="My Title")
         # plot_text calls ax.set_title(..., loc="left"), so the title text
@@ -257,7 +257,7 @@ class TestDocPlotText(ExtTestCase):
 
     def test_plot_text_with_line_color_map(self):
         import matplotlib.axes
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         ax = plot_text("+added\n-removed\n neutral", line_color_map={"+": "green", "-": "red"})
         self.assertIsInstance(ax, matplotlib.axes.Axes)
@@ -265,7 +265,7 @@ class TestDocPlotText(ExtTestCase):
 
     def test_plot_text_custom_figsize(self):
         import matplotlib.axes
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         ax = plot_text("text", figsize=(8, 4))
         self.assertIsInstance(ax, matplotlib.axes.Axes)
@@ -273,7 +273,7 @@ class TestDocPlotText(ExtTestCase):
 
     def test_plot_text_empty_string(self):
         import matplotlib.axes
-        from yobx.doc import plot_text
+        from yaourt.doc import plot_text
 
         ax = plot_text("")
         self.assertIsInstance(ax, matplotlib.axes.Axes)
@@ -301,11 +301,11 @@ class TestDocPlotDot(ExtTestCase):
 
     def test_plot_dot_returns_axes_from_model_proto(self):
         import matplotlib.axes
-        from yobx.doc import demo_mlp_model, plot_dot
+        from yaourt.doc import demo_mlp_model, plot_dot
 
         model = demo_mlp_model("")
         with patch(
-            "yobx.doc.draw_graph_graphviz",
+            "yaourt.doc.draw_graph_graphviz",
             side_effect=lambda dot, path, engine="dot": self._write_fake_png(path),
         ):
             ax = plot_dot(model)
@@ -313,12 +313,12 @@ class TestDocPlotDot(ExtTestCase):
         self.plt.close("all")
 
     def test_plot_dot_uses_provided_axes(self):
-        from yobx.doc import demo_mlp_model, plot_dot
+        from yaourt.doc import demo_mlp_model, plot_dot
 
         model = demo_mlp_model("")
         _fig, ax = self.plt.subplots()
         with patch(
-            "yobx.doc.draw_graph_graphviz",
+            "yaourt.doc.draw_graph_graphviz",
             side_effect=lambda dot, path, engine="dot": self._write_fake_png(path),
         ):
             result = plot_dot(model, ax=ax)
@@ -327,11 +327,11 @@ class TestDocPlotDot(ExtTestCase):
 
     def test_plot_dot_accepts_dot_string(self):
         import matplotlib.axes
-        from yobx.doc import plot_dot
+        from yaourt.doc import plot_dot
 
         dot_str = "digraph { a -> b }"
         with patch(
-            "yobx.doc.draw_graph_graphviz",
+            "yaourt.doc.draw_graph_graphviz",
             side_effect=lambda dot, path, engine="dot": self._write_fake_png(path),
         ):
             ax = plot_dot(dot_str)

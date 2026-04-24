@@ -1,6 +1,6 @@
 import unittest
-from yobx.ext_test_case import ExtTestCase
-from yobx.pv_version import PvVersion
+from yaourt.ext_test_case import ExtTestCase
+from yaourt.pv_version import PvVersion
 
 
 class TestPvVersion(ExtTestCase):

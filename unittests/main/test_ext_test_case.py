@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import warnings
 import numpy as np
-from yobx.ext_test_case import (
+from yaourt.ext_test_case import (
     ExtTestCase,
     ignore_errors,
     ignore_warnings,
