@@ -287,16 +287,16 @@ def plot_text(
 ) -> "matplotlib.axis.Axis":  # noqa: F821
     """
     Renders a block of text as a matplotlib figure, with optional per-line
-    colour coding based on the first character of each line.
+    color coding based on the first character of each line.
 
     :param text: the text to render (newlines split into rows)
     :param ax: optional matplotlib axis; if *None* a new figure and axis are created
     :param title: optional axis title
     :param fontsize: font size for the rendered text
-    :param line_color_map: mapping from a line's first character to a colour
+    :param line_color_map: mapping from a line's first character to a color
         string (e.g. ``{"+": "green", "-": "red", "@": "blue"}``).
         Lines whose first character is not in the map use *default_color*.
-    :param default_color: colour for lines not matched by *line_color_map*
+    :param default_color: color for lines not matched by *line_color_map*
     :param figsize: ``(width, height)`` in inches; only used when *ax* is *None*
     :return: the matplotlib axis
     """

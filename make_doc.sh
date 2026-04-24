@@ -1,4 +1,4 @@
-@echo "--"
-@echo "-- Builds the documentation"
-@echo "--"
+echo "--"
+echo "-- Builds the documentation"
+echo "--"
 python -m sphinx docs dist/html -j auto
