@@ -103,3 +103,17 @@ select = [
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "yaourt.doc",
+    "yaourt.ext_test_case",
+]
+ignore_errors = true
+
+[tool.pyrefly]
+project-includes = ["yaourt/**/*.py"]
+project-excludes = [
+    "yaourt/doc.py",
+    "yaourt/ext_test_case.py",
+]
