@@ -6,7 +6,7 @@ API Reference
 
     yaourt
     yaourt.doc
-    yaourt.ortops
-    yaourt.ortops.cpu
+    ortops/yaourt.ortops
+    ortops/yaourt.ortops.cpu
     plot/yaourt.plot
     plot/yaourt.plot.benchmark
