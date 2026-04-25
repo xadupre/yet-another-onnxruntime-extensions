@@ -26,6 +26,8 @@ dev = [
 ]
 docs = [
     "black",
+    "matplotlib",
+    "pandas",
     "pydata-sphinx-theme",
     "sphinx>=7",
     "sphinx-copybutton",
@@ -98,7 +100,7 @@ select = [
     "UP006", "UP007", "UP015", "UP027", "UP031", "UP032", "UP034", "UP035", "UP037", "UP045",
 ]
 "*/__init__.py" = ["F401"]
-"docs/**" = ["RUF001", "SIM105"]
+"docs/**" = ["B018", "E402", "RUF001", "SIM105"]
 "unittests/**" = ["B023", "B904", "E731", "SIM300"]
 
 [tool.mypy]
@@ -117,3 +119,4 @@ project-excludes = [
     "yaourt/doc.py",
     "yaourt/ext_test_case.py",
 ]
+ignore-missing-imports = ["pandas", "matplotlib", "matplotlib.axes", "matplotlib.pyplot", "matplotlib.patches"]

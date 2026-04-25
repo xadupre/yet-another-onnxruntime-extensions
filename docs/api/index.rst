@@ -8,3 +8,4 @@ API Reference
     yaourt.doc
     plot/yaourt.plot
     plot/yaourt.plot.benchmark
+    tools/index

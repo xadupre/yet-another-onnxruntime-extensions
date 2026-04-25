@@ -15,9 +15,15 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
     "sphinx_issues",
     "matplotlib.sphinxext.plot_directive",
 ]
+
+sphinx_gallery_conf = {
+    "examples_dirs": ["examples"],
+    "gallery_dirs": ["auto_examples"],
+}
 
 # templates_path = ["_templates"]
 exclude_patterns = ["_build"]
