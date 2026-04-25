@@ -3,7 +3,7 @@ Profiling onnxruntime execution
 ================================
 
 This example shows how to profile the execution of an ONNX model with
-onnxruntime and visualise the results with
+onnxruntime and visualize the results with
 :func:`~yaourt.tools.js_profile.plot_ort_profile` and
 :func:`~yaourt.tools.js_profile.plot_ort_profile_timeline`.
 """
