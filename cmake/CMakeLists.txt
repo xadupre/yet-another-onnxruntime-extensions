@@ -30,6 +30,13 @@ message(STATUS "--------------------------------------------")
 include("targets/common.cmake")
 
 #
+# C++ unit tests
+#
+
+enable_testing()
+include("targets/unittest_cpp.cmake")
+
+#
 # new kernels for onnxruntime
 #
 
