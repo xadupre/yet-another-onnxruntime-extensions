@@ -7,4 +7,4 @@ API Reference
 .. toctree::
     :maxdepth: 1
 
-    js_profile
+    tools/index
