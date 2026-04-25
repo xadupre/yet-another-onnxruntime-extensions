@@ -23,7 +23,12 @@ ROOT = os.path.realpath(os.path.abspath(os.path.join(_yaourt_file, "..", "..")))
 
 
 def _import_source(module_file_path: str, module_name: str):
-    """Imports *module_file_path* and executes its top-level code."""
+    """Executes the module at *module_file_path* as a Python module and returns it.
+
+    :param module_file_path: absolute path to the Python file
+    :param module_name: logical name to assign to the module
+    :returns: the executed module object
+    """
     if not os.path.exists(module_file_path):
         raise FileNotFoundError(module_file_path)
     spec = importlib.util.spec_from_file_location(module_name, module_file_path)
@@ -38,7 +43,13 @@ class TestDocumentationExamples(ExtTestCase):
     """Runs every ``plot_*.py`` script found under ``docs/examples/``."""
 
     def run_test(self, fold: str, name: str, verbose: int = 0) -> int:
-        """Runs the example at *fold/name* and returns 1 on success."""
+        """Executes the example at *fold/name* in-process; falls back to subprocess on failure.
+
+        :param fold: directory that contains the example script
+        :param name: filename of the example script
+        :param verbose: when non-zero, prints the elapsed time
+        :returns: 1 on success
+        """
         ppath = os.environ.get("PYTHONPATH", "")
         if not ppath:
             os.environ["PYTHONPATH"] = ROOT
@@ -74,7 +85,7 @@ class TestDocumentationExamples(ExtTestCase):
 
     @classmethod
     def add_test_methods(cls):
-        """Discovers example scripts and attaches one test method per script."""
+        """Scans ``docs/examples/`` for ``plot_*.py`` files and attaches one test method per script."""  # noqa: E501
         this = os.path.abspath(os.path.dirname(__file__))
         root_fold = os.path.normpath(os.path.join(this, "..", "..", "docs", "examples"))
 
