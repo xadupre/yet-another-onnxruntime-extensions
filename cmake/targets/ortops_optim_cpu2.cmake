@@ -6,8 +6,8 @@ message(STATUS "+ KERNEL yaourt.ortops.optim.cpu (lite)")
 ort_add_custom_op(
   ortops_optim_cpu2
   "CPU"
-  ortops/optim/cpu2
-  ../ortops/optim/cpu2/ort_optim_cpu2_lib.cc)
+  ortops/sparse/cpu
+  ../ortops/sparse/cpu/ort_optim_cpu2_lib.cc)
 
 target_include_directories(
   ortops_optim_cpu2
