@@ -4,5 +4,7 @@ API Reference
 .. automodule:: yaourt
     :members:
 
-.. automodule:: yaourt.tools.js_profile
-    :members:
+.. toctree::
+    :maxdepth: 1
+
+    js_profile
