@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import warnings
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from pandas import DataFrame
 
@@ -38,9 +38,7 @@ def _process_shape(shape_df) -> str:
     for val in shape_df:
         if len(val) != 1:
             raise ValueError(f"Unable to process shape {val!r} from {values!r}.")
-        for _k, _v in val.items():
-            k, v = _k, _v
-            break
+        k, v = next(iter(val.items()))
         if v:
             vs = "x".join(map(str, v))
             values.append(f"{_mapping_types.get(k, k)}[{vs}]")
@@ -302,8 +300,8 @@ def plot_ort_profile_timeline(
     assert dfi.shape[0] > 0, f"Iteration {iteration} cannot be found in {iterations}."
 
     if "fence_before" in set(dfi["event_name"]):
-        started = {}
-        data = []
+        started: dict[Any, dict[str, Any]] = {}
+        data: list[dict[str, Any]] = []
         for irow in dfi.iterrows():
             assert isinstance(irow, tuple), f"pandas has changed its api, type is {type(irow)}"
             assert len(irow) == 2, f"pandas has changed its api, row is {irow}"

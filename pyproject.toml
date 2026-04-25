@@ -117,3 +117,4 @@ project-excludes = [
     "yaourt/doc.py",
     "yaourt/ext_test_case.py",
 ]
+ignore-missing-imports = ["pandas", "matplotlib", "matplotlib.axes", "matplotlib.pyplot", "matplotlib.patches"]
