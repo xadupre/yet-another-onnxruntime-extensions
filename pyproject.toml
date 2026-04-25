@@ -26,6 +26,8 @@ dev = [
 ]
 docs = [
     "black",
+    "matplotlib",
+    "pandas",
     "pydata-sphinx-theme",
     "sphinx>=7",
     "sphinx-copybutton",

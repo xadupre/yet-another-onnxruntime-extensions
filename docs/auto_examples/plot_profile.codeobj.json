@@ -1,0 +1,849 @@
+{
+ "InferenceSession": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "InferenceSession"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "InferenceSession"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "InferenceSession"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "Session"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "Session"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "Session"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "InferenceSession"
+  }
+ ],
+ "SessionOptions": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "module_short": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "name": "SessionOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "SessionOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "SessionOptions"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "SessionOptions"
+  }
+ ],
+ "_": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
+ "ax": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes"
+  }
+ ],
+ "ax2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes"
+  }
+ ],
+ "df": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pandas",
+   "module_short": "pandas",
+   "name": "DataFrame"
+  }
+ ],
+ "fig": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure"
+  }
+ ],
+ "fig.tight_layout": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "FigureBase.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "FigureBase.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.tight_layout"
+  }
+ ],
+ "fig2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure"
+  }
+ ],
+ "fig2.tight_layout": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "FigureBase.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "FigureBase.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.tight_layout"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.tight_layout"
+  }
+ ],
+ "js_profile_to_dataframe": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "yaourt.tools.js_profile",
+   "module_short": "yaourt.tools",
+   "name": "js_profile_to_dataframe"
+  }
+ ],
+ "matplotlib.use": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "use"
+  }
+ ],
+ "model": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.onnx_ml_pb2",
+   "module_short": "onnx",
+   "name": "ModelProto"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx",
+   "module_short": "onnx",
+   "name": "ModelProto"
+  }
+ ],
+ "model.SerializeToString": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "np.float32": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float32"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "floating"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "inexact"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "number"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "generic"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float32"
+  }
+ ],
+ "np.random.randn": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "module.randn"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy.random",
+   "module_short": "numpy.random",
+   "name": "randn"
+  }
+ ],
+ "np.zeros": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "zeros"
+  }
+ ],
+ "oh.make_graph": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.helper",
+   "module_short": "onnx.helper",
+   "name": "make_graph"
+  }
+ ],
+ "oh.make_model": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.helper",
+   "module_short": "onnx.helper",
+   "name": "make_model"
+  }
+ ],
+ "oh.make_node": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.helper",
+   "module_short": "onnx.helper",
+   "name": "make_node"
+  }
+ ],
+ "oh.make_opsetid": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.helper",
+   "module_short": "onnx.helper",
+   "name": "make_opsetid"
+  }
+ ],
+ "oh.make_tensor_value_info": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.helper",
+   "module_short": "onnx.helper",
+   "name": "make_tensor_value_info"
+  }
+ ],
+ "onh.from_array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.numpy_helper",
+   "module_short": "onnx.numpy_helper",
+   "name": "from_array"
+  }
+ ],
+ "onnx.TensorProto.FLOAT": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnx.TensorProto",
+   "module_short": "onnx.TensorProto",
+   "name": "FLOAT"
+  }
+ ],
+ "opts": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "module_short": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "name": "SessionOptions"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "SessionOptions"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "SessionOptions"
+  }
+ ],
+ "opts.enable_profiling": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "module_short": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "name": "SessionOptions.enable_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "SessionOptions.enable_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "SessionOptions.enable_profiling"
+  }
+ ],
+ "opts.profile_file_prefix": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "module_short": "onnxruntime.capi.onnxruntime_pybind11_state",
+   "name": "SessionOptions.profile_file_prefix"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "SessionOptions.profile_file_prefix"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "SessionOptions.profile_file_prefix"
+  }
+ ],
+ "os.path.join": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "os.path",
+   "module_short": "os.path",
+   "name": "join"
+  }
+ ],
+ "os.unlink": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "os",
+   "module_short": "os",
+   "name": "unlink"
+  }
+ ],
+ "plot_ort_profile": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "yaourt.tools.js_profile",
+   "module_short": "yaourt.tools",
+   "name": "plot_ort_profile"
+  }
+ ],
+ "plot_ort_profile_timeline": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "yaourt.tools.js_profile",
+   "module_short": "yaourt.tools",
+   "name": "plot_ort_profile_timeline"
+  }
+ ],
+ "plt.subplots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "subplots"
+  }
+ ],
+ "profile_file": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
+ "sess": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "InferenceSession"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "InferenceSession"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "InferenceSession"
+  }
+ ],
+ "sess.end_profiling": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "InferenceSession.end_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "InferenceSession.end_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "InferenceSession.end_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "Session.end_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "Session.end_profiling"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "Session.end_profiling"
+  }
+ ],
+ "sess.run": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "InferenceSession.run"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "InferenceSession.run"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "InferenceSession.run"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi.onnxruntime_inference_collection",
+   "module_short": "onnxruntime.capi.onnxruntime_inference_collection",
+   "name": "Session.run"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime.capi",
+   "module_short": "onnxruntime.capi",
+   "name": "Session.run"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "onnxruntime",
+   "module_short": "onnxruntime",
+   "name": "Session.run"
+  }
+ ],
+ "shutil.rmtree": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "shutil",
+   "module_short": "shutil",
+   "name": "rmtree"
+  }
+ ],
+ "tempfile.mkdtemp": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tempfile",
+   "module_short": "tempfile",
+   "name": "mkdtemp"
+  }
+ ],
+ "tmpdir": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
+ "x": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "yaourt.tools.js_profile.plot_ort_profile": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "yaourt.tools.js_profile",
+   "module_short": "yaourt.tools",
+   "name": "plot_ort_profile"
+  }
+ ],
+ "yaourt.tools.js_profile.plot_ort_profile_timeline": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "yaourt.tools.js_profile",
+   "module_short": "yaourt.tools",
+   "name": "plot_ort_profile_timeline"
+  }
+ ]
+}
