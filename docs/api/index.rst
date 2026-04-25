@@ -6,5 +6,5 @@ API Reference
 
     yaourt
     yaourt.doc
-    yaourt.plot
-    yaourt.plot.benchmark
+    plot/yaourt.plot
+    plot/yaourt.plot.benchmark
