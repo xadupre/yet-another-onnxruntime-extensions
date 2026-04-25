@@ -355,12 +355,12 @@ class TestHHistograms(ExtTestCase):
     def _make_df(self):
         import pandas
 
-        from yaourt.doc import hhistograms_data
+        from yaourt.plot.data import hhistograms_data
 
         return pandas.DataFrame(hhistograms_data())
 
     def test_hhistograms_data_returns_dict(self):
-        from yaourt.doc import hhistograms_data
+        from yaourt.plot.data import hhistograms_data
 
         data = hhistograms_data()
         self.assertIsInstance(data, dict)
@@ -373,7 +373,7 @@ class TestHHistograms(ExtTestCase):
     def test_hhistograms_returns_axes(self):
         import matplotlib.axes
 
-        from yaourt.doc import hhistograms
+        from yaourt.plot.benchmark import hhistograms
 
         df = self._make_df()
         ax = hhistograms(df, keys=("input", "name"))
@@ -383,7 +383,7 @@ class TestHHistograms(ExtTestCase):
     def test_hhistograms_single_key(self):
         import matplotlib.axes
 
-        from yaourt.doc import hhistograms
+        from yaourt.plot.benchmark import hhistograms
 
         df = self._make_df()
         ax = hhistograms(df, keys="name")
@@ -391,7 +391,7 @@ class TestHHistograms(ExtTestCase):
         self.plt.close("all")
 
     def test_hhistograms_uses_provided_axes(self):
-        from yaourt.doc import hhistograms
+        from yaourt.plot.benchmark import hhistograms
 
         df = self._make_df()
         _fig, ax = self.plt.subplots()
@@ -402,7 +402,7 @@ class TestHHistograms(ExtTestCase):
     def test_hhistograms_custom_title(self):
         import matplotlib.axes
 
-        from yaourt.doc import hhistograms
+        from yaourt.plot.benchmark import hhistograms
 
         df = self._make_df()
         ax = hhistograms(df, keys=("input", "name"), title="My Benchmark")
@@ -412,7 +412,7 @@ class TestHHistograms(ExtTestCase):
     def test_hhistograms_limit(self):
         import matplotlib.axes
 
-        from yaourt.doc import hhistograms
+        from yaourt.plot.benchmark import hhistograms
 
         df = self._make_df()
         ax = hhistograms(df, keys=("input", "name"), limit=3)
