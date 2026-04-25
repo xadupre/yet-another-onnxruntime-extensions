@@ -4,11 +4,16 @@ Functions to process profiling output from onnxruntime.
 Ported from https://github.com/sdpython/onnx-extended/blob/main/onnx_extended/tools/js_profile.py
 """
 
+from __future__ import annotations
+
 import json
 import warnings
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from pandas import DataFrame
+
+if TYPE_CHECKING:
+    import matplotlib.axes
 
 _mapping_types = {
     "float": "F",
@@ -29,7 +34,7 @@ def _process_shape(shape_df) -> str:
     """Converts a shape entry from the profiling dataframe into a compact string."""
     if isinstance(shape_df, float) or len(shape_df) == 0:
         return ""
-    values = []
+    values: list[str] = []
     for val in shape_df:
         if len(val) != 1:
             raise ValueError(f"Unable to process shape {val!r} from {values!r}.")
@@ -206,10 +211,10 @@ def _preprocess_graph2(df: DataFrame) -> DataFrame:
 
 def plot_ort_profile(
     df: DataFrame,
-    ax0: Optional["matplotlib.axes.Axes"] = None,  # noqa: F821
-    ax1: Optional["matplotlib.axes.Axes"] = None,  # noqa: F821
+    ax0: Optional[matplotlib.axes.Axes] = None,
+    ax1: Optional[matplotlib.axes.Axes] = None,
     title: Optional[str] = None,
-) -> "matplotlib.axes.Axes":  # noqa: F821
+) -> matplotlib.axes.Axes:
     """
     Plots time spent in computation based on a profiling dataframe.
 
@@ -264,12 +269,12 @@ def plot_ort_profile(
 
 def plot_ort_profile_timeline(
     df: DataFrame,
-    ax: Optional["matplotlib.axes.Axes"] = None,  # noqa: F821
+    ax: Optional[matplotlib.axes.Axes] = None,
     iteration: int = -2,
     title: Optional[str] = None,
     quantile: float = 0.5,
     fontsize: int = 12,
-) -> "matplotlib.axes.Axes":  # noqa: F821
+) -> matplotlib.axes.Axes:
     """
     Creates a timeline plot from an onnxruntime profiling dataframe.
 
