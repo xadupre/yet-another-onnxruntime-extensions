@@ -80,3 +80,20 @@ endif()
 
 message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}")
+
+#
+# Code coverage
+#
+option(ENABLE_COVERAGE "Enable C/C++ code coverage instrumentation" OFF)
+if(ENABLE_COVERAGE)
+  if(MSVC)
+    message(WARNING "Code coverage is not supported with MSVC; ENABLE_COVERAGE is ignored.")
+  else()
+    message(STATUS "Code coverage is enabled.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
+  endif()
+endif()
+message(STATUS "ENABLE_COVERAGE=${ENABLE_COVERAGE}")

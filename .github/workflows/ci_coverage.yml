@@ -1,0 +1,72 @@
+name: ci-3-coverage
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cpp_coverage:
+    name: cpp-coverage (ubuntu-latest, py3.12)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+
+      - name: Install package
+        run: pip install -e .[dev]
+
+      - name: pip freeze
+        run: pip freeze
+
+      - name: Configure cmake with coverage
+        run: >
+          cmake -S cmake -B _build
+          -DCMAKE_BUILD_TYPE=Debug
+          -DENABLE_COVERAGE=ON
+
+      - name: Build custom ops
+        run: cmake --build _build
+
+      - name: Run ortops tests
+        run: pytest --durations=10 unittests/ortops
+
+      - name: Find coverage data files
+        run: find . -name "*.gcda" | sort
+
+      - name: Collect C++ coverage with lcov
+        run: |
+          lcov --capture \
+               --base-directory . \
+               --directory . \
+               --output-file coverage_cpp_raw.info \
+               --gcov-tool gcov \
+               --ignore-errors mismatch
+          lcov --remove coverage_cpp_raw.info \
+               '/usr/*' \
+               '*/onnxruntime*' \
+               '*/_deps/*' \
+               --output-file coverage_cpp.info \
+               --ignore-errors unused
+          lcov --list coverage_cpp.info
+
+      - name: Upload C++ coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage_cpp.info
+          flags: cpp
