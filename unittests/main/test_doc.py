@@ -339,5 +339,86 @@ class TestDocPlotDot(ExtTestCase):
         self.plt.close("all")
 
 
+@skipif_ci_windows("too long")
+@skipif_ci_apple("too long")
+@requires_matplotlib()
+class TestHHistograms(ExtTestCase):
+    @classmethod
+    def setUp(cls):
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        cls.plt = plt
+
+    def _make_df(self):
+        import pandas
+
+        from yaourt.plot._data import hhistograms_data
+
+        return pandas.DataFrame(hhistograms_data())
+
+    def test_hhistograms_data_returns_dict(self):
+        from yaourt.plot._data import hhistograms_data
+
+        data = hhistograms_data()
+        self.assertIsInstance(data, dict)
+        self.assertIn("average", data)
+        self.assertIn("name", data)
+        self.assertIn("input", data)
+        self.assertIn("min_exec", data)
+        self.assertIn("max_exec", data)
+
+    def test_hhistograms_returns_axes(self):
+        import matplotlib.axes
+
+        from yaourt.plot.benchmark import hhistograms
+
+        df = self._make_df()
+        ax = hhistograms(df, keys=("input", "name"))
+        self.assertIsInstance(ax, matplotlib.axes.Axes)
+        self.plt.close("all")
+
+    def test_hhistograms_single_key(self):
+        import matplotlib.axes
+
+        from yaourt.plot.benchmark import hhistograms
+
+        df = self._make_df()
+        ax = hhistograms(df, keys="name")
+        self.assertIsInstance(ax, matplotlib.axes.Axes)
+        self.plt.close("all")
+
+    def test_hhistograms_uses_provided_axes(self):
+        from yaourt.plot.benchmark import hhistograms
+
+        df = self._make_df()
+        _fig, ax = self.plt.subplots()
+        result = hhistograms(df, keys=("input", "name"), ax=ax)
+        self.assertIs(result, ax)
+        self.plt.close("all")
+
+    def test_hhistograms_custom_title(self):
+        import matplotlib.axes
+
+        from yaourt.plot.benchmark import hhistograms
+
+        df = self._make_df()
+        ax = hhistograms(df, keys=("input", "name"), title="My Benchmark")
+        self.assertIsInstance(ax, matplotlib.axes.Axes)
+        self.plt.close("all")
+
+    def test_hhistograms_limit(self):
+        import matplotlib.axes
+
+        from yaourt.plot.benchmark import hhistograms
+
+        df = self._make_df()
+        ax = hhistograms(df, keys=("input", "name"), limit=3)
+        self.assertIsInstance(ax, matplotlib.axes.Axes)
+        self.plt.close("all")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

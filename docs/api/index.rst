@@ -1,5 +1,10 @@
 API Reference
 =============
 
-.. automodule:: yaourt
-    :members:
+.. toctree::
+    :maxdepth: 1
+
+    yaourt
+    yaourt.doc
+    plot/yaourt.plot
+    plot/yaourt.plot.benchmark

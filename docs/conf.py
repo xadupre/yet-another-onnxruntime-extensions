@@ -16,6 +16,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx_copybutton",
     "sphinx_issues",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 # templates_path = ["_templates"]
@@ -25,10 +26,7 @@ html_static_path = ["_static"]
 html_logo = "_static/logo.svg"
 html_theme_options = {
     "github_url": "https://github.com/xadupre/yet-another-onnxruntime-extensions",
-    "logo": {
-        "image_light": "_static/logo.svg",
-        "image_dark": "_static/logo.svg",
-    },
+    "logo": {"image_light": "_static/logo.svg", "image_dark": "_static/logo.svg"},
 }
 
 intersphinx_mapping = {
