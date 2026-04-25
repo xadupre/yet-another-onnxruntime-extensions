@@ -355,12 +355,12 @@ class TestHHistograms(ExtTestCase):
     def _make_df(self):
         import pandas
 
-        from yaourt.plot.data import hhistograms_data
+        from yaourt.plot._data import hhistograms_data
 
         return pandas.DataFrame(hhistograms_data())
 
     def test_hhistograms_data_returns_dict(self):
-        from yaourt.plot.data import hhistograms_data
+        from yaourt.plot._data import hhistograms_data
 
         data = hhistograms_data()
         self.assertIsInstance(data, dict)

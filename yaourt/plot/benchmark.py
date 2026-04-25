@@ -30,6 +30,15 @@ def hhistograms(
     :param limit: maximum number of non-baseline rows to display
     :param ax: existing matplotlib axis; a new figure is created when *None*
     :return: the matplotlib axis
+
+    .. plot::
+
+        import pandas
+        from yaourt.plot._data import hhistograms_data
+        from yaourt.plot.benchmark import hhistograms
+
+        df = pandas.DataFrame(hhistograms_data())
+        hhistograms(df, keys=("input", "name"))
     """
     import pandas
 

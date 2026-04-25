@@ -16,6 +16,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx_copybutton",
     "sphinx_issues",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 # templates_path = ["_templates"]

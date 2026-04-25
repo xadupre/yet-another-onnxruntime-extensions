@@ -8,4 +8,3 @@ API Reference
     yaourt.doc
     yaourt.plot
     yaourt.plot.benchmark
-    yaourt.plot.data
