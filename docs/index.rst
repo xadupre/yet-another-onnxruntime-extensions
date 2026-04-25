@@ -8,3 +8,4 @@ Experimental onnxruntime extensions.
     :caption: Contents
 
     api/index
+    auto_examples/index
