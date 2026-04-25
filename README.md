@@ -2,6 +2,7 @@
 
 [![core](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_core.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_core.yml)
 [![ortops](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_ortops.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_ortops.yml)
+[![coverage](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_coverage.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_coverage.yml)
 [![build](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/build.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/build.yml)
 [![mypy](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/mypy.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/mypy.yml)
 [![Documentation](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/docs.yml)
