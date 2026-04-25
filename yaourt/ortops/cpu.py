@@ -5,15 +5,17 @@ and element types) is parsed directly from the C++ lite-API source files at
 import time so that the Python catalogue always stays in sync with the C++
 implementation without any manual maintenance.
 
-Human-readable documentation strings are kept in :data:`_OP_DOCS` so that
-prose descriptions can be edited independently of the C++ code.
+Human-readable documentation strings are parsed from ``///`` Doxygen-style
+doc comments in the C++ header file, so prose descriptions live alongside
+the kernel declarations and are never duplicated in Python.
 
 Supported C++ sources
 ---------------------
 - ``ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` — provides the op domain and the
   ``CreateLiteCustomOp`` registrations (op name → kernel class + exec provider).
 - ``ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
-  signatures used to extract input/output argument names and element types.
+  signatures and ``///`` doc comments used to extract input/output argument
+  names, element types, and prose descriptions.
 """
 
 from __future__ import annotations
@@ -94,62 +96,6 @@ class OrtOpDesc:
 
 
 # ---------------------------------------------------------------------------
-# Human-readable documentation strings (prose that does not belong in C++)
-# ---------------------------------------------------------------------------
-
-#: Per-op documentation augmenting the auto-parsed structural metadata.
-#: Keys are op names; each value may contain ``"doc"``, ``"input_descs"``,
-#: and ``"output_descs"`` entries.
-_OP_DOCS: dict[str, dict[str, object]] = {
-    "DenseToSparse": {
-        "doc": (
-            "Converts a 2-D dense ``float32`` tensor into a compact flat sparse"
-            " encoding.  Only non-zero elements are stored together with their"
-            " flat indices, yielding a 1-D ``float32`` output.\n\n"
-            "The encoding format is::\n\n"
-            "    [header | indices (uint32) | values (float32)]\n\n"
-            "where the header records the original shape and the number of"
-            " non-zero elements.  The output is suitable as input to"
-            " *SparseToDense* for a lossless round-trip.\n\n"
-            "**Constraints**\n\n"
-            "- Input must be exactly 2-D.\n"
-            "- Only ``float32`` element type is supported.\n"
-        ),
-        "input_descs": {
-            "X": (
-                "2-D dense float32 input tensor of shape ``[n_rows, n_cols]``."
-                "  Zero elements are not stored in the sparse encoding."
-            )
-        },
-        "output_descs": {
-            "Y": (
-                "1-D float32 output tensor that encodes the sparse representation"
-                " of **X**.  The encoding layout is implementation-defined and"
-                " intended to be consumed by the paired *SparseToDense* op."
-            )
-        },
-    },
-    "SparseToDense": {
-        "doc": (
-            "Converts the compact sparse encoding produced by *DenseToSparse*"
-            " back into a 2-D dense ``float32`` tensor.  Positions that were"
-            " zero in the original tensor are filled with ``0.0``.\n\n"
-            "**Constraints**\n\n"
-            "- Input must be exactly 1-D and contain a valid sparse header.\n"
-            "- The encoded shape must be 2-D.\n"
-            "- Only ``float32`` element type is supported.\n"
-        ),
-        "input_descs": {"X": "1-D float32 sparse encoding produced by *DenseToSparse*."},
-        "output_descs": {
-            "Y": (
-                "Reconstructed 2-D dense float32 tensor.  The shape is"
-                " recovered from the sparse header embedded in **X**."
-            )
-        },
-    },
-}
-
-# ---------------------------------------------------------------------------
 # C++ source parsers
 # ---------------------------------------------------------------------------
 
@@ -223,6 +169,73 @@ def _parse_lite_header(path: str) -> dict[str, list[tuple[str, str, bool]]]:
     return result
 
 
+def _parse_lite_header_docs(path: str) -> dict[str, tuple[str, dict[str, str]]]:
+    """Parses ``///`` Doxygen-style doc comments from a lite-API ``.h`` header.
+
+    Locates blocks of consecutive ``///`` comment lines immediately preceding
+    each ``struct`` definition, strips the ``///`` prefix, and extracts:
+
+    - the op description (all text before the first ``@param`` tag), and
+    - per-parameter descriptions (``@param[in] name desc`` and
+      ``@param[out] name desc`` tags, with optional continuation lines).
+
+    Continuation lines for a parameter are non-empty ``///`` lines that follow
+    a ``@param`` tag and precede the next ``@param`` tag or an empty ``///``
+    line.
+
+    :param path: absolute path to the ``.h`` file
+    :returns: ``{kernel_class: (doc, {param_name: description})}``
+    """
+    with open(path, encoding="utf-8") as fh:
+        content = fh.read()
+
+    doc_struct_re = re.compile(
+        r"((?:[ \t]*///[^\n]*\n)+)"  # group 1: consecutive /// lines
+        r"[ \t]*struct\s+(\w+)"  # group 2: struct name
+    )
+
+    result: dict[str, tuple[str, dict[str, str]]] = {}
+
+    for m in doc_struct_re.finditer(content):
+        raw_block = m.group(1)
+        struct_name = m.group(2)
+
+        # Strip the /// prefix (and one optional trailing space) from every line.
+        lines = [re.sub(r"^[ \t]*///[ ]?", "", line) for line in raw_block.splitlines()]
+
+        doc_lines: list[str] = []
+        param_docs: dict[str, str] = {}
+        current_param: str | None = None
+        current_desc_lines: list[str] = []
+
+        for line in lines:
+            pm = re.match(r"@param\[(?:in|out)\]\s+(\w+)\s*(.*)", line)
+            if pm:
+                if current_param is not None:
+                    param_docs[current_param] = " ".join(
+                        part for part in current_desc_lines if part
+                    ).strip()
+                current_param = pm.group(1)
+                first_desc = pm.group(2).strip()
+                current_desc_lines = [first_desc] if first_desc else []
+            elif current_param is not None:
+                stripped = line.strip()
+                if stripped:
+                    current_desc_lines.append(stripped)
+            else:
+                doc_lines.append(line)
+
+        if current_param is not None:
+            param_docs[current_param] = " ".join(
+                part for part in current_desc_lines if part
+            ).strip()
+
+        doc = "\n".join(doc_lines).strip()
+        result[struct_name] = (doc, param_docs)
+
+    return result
+
+
 def _build_cpu_ops(
     lib_cc_path: str | None = None, header_path: str | None = None
 ) -> dict[str, OrtOpDesc]:
@@ -230,7 +243,8 @@ def _build_cpu_ops(
 
     Structural metadata (op name, domain, execution provider, input/output
     argument names and element types) is extracted from the C++ files.
-    Human-readable descriptions are taken from :data:`_OP_DOCS`.
+    Human-readable descriptions are parsed from ``///`` Doxygen-style doc
+    comments in the header file via :func:`_parse_lite_header_docs`.
 
     :param lib_cc_path: path to the lite-API lib ``.cc`` file; defaults to
         ``ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` inside the repo root.
@@ -250,29 +264,28 @@ def _build_cpu_ops(
 
     domain, registrations = _parse_lite_lib_cc(lib_cc_path)
     kernel_params = _parse_lite_header(header_path)
+    kernel_docs = _parse_lite_header_docs(header_path)
 
     ops: dict[str, OrtOpDesc] = {}
     for kernel_class, op_name, exec_provider in registrations:
         params = kernel_params.get(kernel_class, [])
-        extra = _OP_DOCS.get(op_name, {})
-        input_descs: dict[str, str] = extra.get("input_descs", {})  # type: ignore[assignment]
-        output_descs: dict[str, str] = extra.get("output_descs", {})  # type: ignore[assignment]
+        doc, param_docs = kernel_docs.get(kernel_class, ("", {}))
         ops[op_name] = OrtOpDesc(
             name=op_name,
             domain=domain,
             since_version=1,
             execution_provider=exec_provider,
             inputs=[
-                OrtOpInput(name=n, dtype=t, description=input_descs.get(n, ""))
+                OrtOpInput(name=n, dtype=t, description=param_docs.get(n, ""))
                 for n, t, is_in in params
                 if is_in
             ],
             outputs=[
-                OrtOpOutput(name=n, dtype=t, description=output_descs.get(n, ""))
+                OrtOpOutput(name=n, dtype=t, description=param_docs.get(n, ""))
                 for n, t, is_in in params
                 if not is_in
             ],
-            doc=extra.get("doc", ""),  # type: ignore[arg-type]
+            doc=doc,
         )
 
     return ops

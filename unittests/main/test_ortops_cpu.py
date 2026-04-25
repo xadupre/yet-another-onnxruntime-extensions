@@ -193,9 +193,50 @@ class TestParseLiteHeader(ExtTestCase):
         self.assertEqual(result, {})
 
 
-@unittest.skipUnless(
-    os.path.exists(_LIB_CC) and os.path.exists(_HEADER), "C++ source files not found"
-)
+@unittest.skipUnless(os.path.exists(_HEADER), f"C++ header not found: {_HEADER}")
+class TestParseLiteHeaderDocs(ExtTestCase):
+    """Unit tests for the C++ header doc-comment parser."""
+
+    def test_finds_docs_for_both_kernels(self):
+        from yaourt.ortops.cpu import _parse_lite_header_docs
+
+        result = _parse_lite_header_docs(_HEADER)
+        self.assertIn("DenseToSparseKernelLite", result)
+        self.assertIn("SparseToDenseKernelLite", result)
+
+    def test_docs_are_non_empty(self):
+        from yaourt.ortops.cpu import _parse_lite_header_docs
+
+        result = _parse_lite_header_docs(_HEADER)
+        for name, (doc, _) in result.items():
+            self.assertGreater(len(doc), 0, msg=f"{name} doc is empty")
+
+    def test_param_docs_contain_x_and_y(self):
+        from yaourt.ortops.cpu import _parse_lite_header_docs
+
+        result = _parse_lite_header_docs(_HEADER)
+        for name, (_, param_docs) in result.items():
+            self.assertIn("X", param_docs, msg=f"{name} missing @param X")
+            self.assertIn("Y", param_docs, msg=f"{name} missing @param Y")
+
+    def test_param_descriptions_are_non_empty(self):
+        from yaourt.ortops.cpu import _parse_lite_header_docs
+
+        result = _parse_lite_header_docs(_HEADER)
+        for kernel, (_, param_docs) in result.items():
+            for param, desc in param_docs.items():
+                self.assertGreater(len(desc), 0, msg=f"{kernel}.{param} description is empty")
+
+    def test_empty_file_returns_empty(self):
+        from yaourt.ortops.cpu import _parse_lite_header_docs
+
+        with tempfile.NamedTemporaryFile(suffix=".h", mode="w", delete=True) as fh:
+            fh.write("// empty\n")
+            fh.flush()
+            result = _parse_lite_header_docs(fh.name)
+        self.assertEqual(result, {})
+
+
 class TestBuildCpuOps(ExtTestCase):
     """Tests for _build_cpu_ops() with explicit file paths."""
 
