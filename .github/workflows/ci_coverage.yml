@@ -42,6 +42,9 @@ jobs:
       - name: Build custom ops
         run: cmake --build _build
 
+      - name: Run C++ unit tests
+        run: ctest --test-dir _build --output-on-failure
+
       - name: Run ortops tests
         run: pytest --durations=10 unittests/ortops
 
