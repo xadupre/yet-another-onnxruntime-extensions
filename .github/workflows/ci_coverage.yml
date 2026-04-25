@@ -45,17 +45,23 @@ jobs:
       - name: Run ortops tests
         run: pytest --durations=10 unittests/ortops
 
+      - name: Find coverage data files
+        run: find . -name "*.gcda" | sort
+
       - name: Collect C++ coverage with lcov
         run: |
           lcov --capture \
-               --directory _build \
-               --output-file coverage_cpp.info \
-               --gcov-tool gcov
-          lcov --remove coverage_cpp.info \
+               --base-directory . \
+               --directory . \
+               --output-file coverage_cpp_raw.info \
+               --gcov-tool gcov \
+               --ignore-errors mismatch
+          lcov --remove coverage_cpp_raw.info \
                '/usr/*' \
                '*/onnxruntime*' \
                '*/_deps/*' \
-               --output-file coverage_cpp.info
+               --output-file coverage_cpp.info \
+               --ignore-errors unused
           lcov --list coverage_cpp.info
 
       - name: Upload C++ coverage to Codecov
