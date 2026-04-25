@@ -1,17 +1,23 @@
 """Benchmark plotting helpers."""
 
-from typing import Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    import matplotlib.axes
+    import pandas
 
 
 def hhistograms(
-    df: "pandas.DataFrame",  # noqa: F821
+    df: pandas.DataFrame,
     keys: Union[str, Tuple[str, ...]] = "name",
     metric: str = "average",
     baseline: str = "baseline",
     title: str = "Benchmark",
     limit: int = 50,
-    ax: Optional["matplotlib.axis.Axis"] = None,  # noqa: F821
-) -> "matplotlib.axis.Axis":  # noqa: F821
+    ax: Optional[matplotlib.axes.Axes] = None,
+) -> matplotlib.axes.Axes:
     """
     Plots horizontal histograms with error bars for benchmark comparisons.
 
