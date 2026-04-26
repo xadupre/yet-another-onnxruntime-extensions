@@ -20,10 +20,7 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
 ]
 
-sphinx_gallery_conf = {
-    "examples_dirs": ["examples"],
-    "gallery_dirs": ["auto_examples"],
-}
+sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_examples"]}
 
 # templates_path = ["_templates"]
 exclude_patterns = ["_build"]

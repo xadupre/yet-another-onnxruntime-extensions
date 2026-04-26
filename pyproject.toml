@@ -18,6 +18,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "black",
+    "matplotlib",
     "pandas",
     "pytest>=7",
     "pytest-coverage",
