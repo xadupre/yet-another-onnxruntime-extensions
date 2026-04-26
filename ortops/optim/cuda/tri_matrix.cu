@@ -142,7 +142,7 @@ template <typename T> void TriMatrixKernel<T>::Compute(OrtKernelContext *context
       "The constants should be on CPU already.");
 
   std::vector<int64_t> csts_dim = csts.GetTensorTypeAndShapeInfo().GetShape();
-  EXT_ENFORCE(csts_dim.size() == 1 && csts_dim[0] == 3, "Second input must have three reals")
+  EXT_ENFORCE(csts_dim.size() == 1 && csts_dim[0] == 3, "Second input must have three reals");
 
   std::vector<int64_t> dimensions = shape.GetTensorTypeAndShapeInfo().GetShape();
   const int64_t *X = shape.GetTensorData<int64_t>();

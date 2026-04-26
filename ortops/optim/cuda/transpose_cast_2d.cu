@@ -117,7 +117,7 @@ void Transpose2DCastKernel::Compute(OrtKernelContext *context) {
   auto memi = A.GetTensorMemoryInfo();
   EXT_ENFORCE(memi.GetDeviceType() == OrtMemoryInfoDeviceType::OrtMemoryInfoDeviceType_GPU,
               "first input is not on GPU");
-  EXT_ENFORCE(dimsA.size() == 2, "This operator only supports 2D tensors.")
+  EXT_ENFORCE(dimsA.size() == 2, "This operator only supports 2D tensors.");
 
   cudaStream_t cuda_stream = (cudaStream_t)ctx.GetGPUComputeStream();
 
