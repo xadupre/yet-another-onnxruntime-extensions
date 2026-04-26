@@ -45,5 +45,6 @@ Experimental onnxruntime extensions.
     :maxdepth: 1
     :caption: Contents
 
+    getting_started
     api/index
     auto_examples/index
