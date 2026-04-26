@@ -12,7 +12,7 @@ import unittest
 
 import numpy
 
-from yaourt.ext_test_case import ExtTestCase, requires_onnxruntime
+from yaourt.ext_test_case import ExtTestCase, has_cuda_onnxruntime, requires_onnxruntime
 
 # Path to the shared library produced by the cmake build.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,16 +30,6 @@ _OP_DOMAIN = "yaourt.ortops.optim.cuda"
 def _lib_available() -> bool:
     """Returns True if the CUDA custom op shared library is present."""
     return os.path.exists(_LIB_PATH)
-
-
-def _cuda_available() -> bool:
-    """Returns True if at least one CUDA device is available via onnxruntime."""
-    try:
-        import onnxruntime as ort
-
-        return "CUDAExecutionProvider" in ort.get_available_providers()
-    except ImportError:
-        return False
 
 
 def _make_inference_session(model_bytes: bytes):
@@ -108,7 +98,7 @@ def _make_ternary_model(
 _skip_reason = f"CUDA custom op library not found at {_LIB_PATH!r} or CUDA unavailable"
 
 
-@unittest.skipUnless(_lib_available() and _cuda_available(), _skip_reason)
+@unittest.skipUnless(_lib_available() and has_cuda_onnxruntime(), _skip_reason)
 @requires_onnxruntime("1.18")
 class TestCudaCustomOps(ExtTestCase):
     """Tests for CUDA custom ops (NegXplus1, ReplaceZero, MulSigmoid, etc.)."""
