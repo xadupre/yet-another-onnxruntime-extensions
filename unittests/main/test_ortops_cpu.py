@@ -8,8 +8,8 @@ from yaourt.ext_test_case import ExtTestCase
 
 # Absolute path to the C++ source files used by the parser.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_LIB_CC = os.path.join(_REPO_ROOT, "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc")
-_HEADER = os.path.join(_REPO_ROOT, "ortops", "sparse", "cpu", "ort_sparse_lite.h")
+_LIB_CC = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc")
+_HEADER = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", "ort_sparse_lite.h")
 
 
 class TestOrtOpsCpuCatalogue(ExtTestCase):

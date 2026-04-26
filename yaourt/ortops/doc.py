@@ -11,9 +11,9 @@ the kernel declarations and are never duplicated in Python.
 
 Supported C++ sources
 ---------------------
-- ``ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` — provides the op domain and the
+- ``yaourt/ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` — provides the op domain and the
   ``CreateLiteCustomOp`` registrations (op name → kernel class + exec provider).
-- ``ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
+- ``yaourt/ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
   signatures and ``///`` doc comments used to extract input/output argument
   names, element types, and prose descriptions.
 
@@ -251,17 +251,19 @@ def _build_cpu_ops(
     comments in the header file via :func:`_parse_lite_header_docs`.
 
     :param lib_cc_path: path to the lite-API lib ``.cc`` file; defaults to
-        ``ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` inside the repo root.
+        ``yaourt/ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` inside the repo root.
     :param header_path: path to the lite-API ``.h`` header; defaults to
-        ``ortops/sparse/cpu/ort_sparse_lite.h`` inside the repo root.
+        ``yaourt/ortops/sparse/cpu/ort_sparse_lite.h`` inside the repo root.
     :returns: dict mapping op name to :class:`OrtOpDesc`; returns an empty
         dict when the C++ source files are not present.
     """
     root = _repo_root()
     if lib_cc_path is None:
-        lib_cc_path = os.path.join(root, "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc")
+        lib_cc_path = os.path.join(
+            root, "yaourt", "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc"
+        )
     if header_path is None:
-        header_path = os.path.join(root, "ortops", "sparse", "cpu", "ort_sparse_lite.h")
+        header_path = os.path.join(root, "yaourt", "ortops", "sparse", "cpu", "ort_sparse_lite.h")
 
     if not (os.path.exists(lib_cc_path) and os.path.exists(header_path)):
         return {}
@@ -339,4 +341,3 @@ def print_cpu_ops() -> None:
                 desc = f" — {out.description}" if out.description else ""
                 print(f"    {out.name} ({out.dtype}){desc}")
         print()
-

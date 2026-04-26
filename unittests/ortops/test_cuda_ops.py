@@ -1,7 +1,7 @@
 """
 Tests for the CUDA custom ORT ops built by cmake.
 
-The shared library ``ortops/optim/cuda/libortops_optim_cuda.so`` must be
+The shared library ``yaourt/ortops/optim/cuda/libortops_optim_cuda.so`` must be
 built with ``cmake --build cmake`` before running this test.  Tests are
 skipped when the library is absent or when no CUDA device is available.
 """
@@ -23,7 +23,7 @@ elif _SYSTEM == "Darwin":
     _LIB_NAME = "libortops_optim_cuda.dylib"
 else:
     _LIB_NAME = "libortops_optim_cuda.so"
-_LIB_PATH = os.path.join(_REPO_ROOT, "ortops", "optim", "cuda", _LIB_NAME)
+_LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "optim", "cuda", _LIB_NAME)
 _OP_DOMAIN = "yaourt.ortops.optim.cuda"
 
 

@@ -2,7 +2,7 @@
 Tests for the DenseToSparse and SparseToDense custom ORT ops using the
 second (lite) custom op API, built by cmake.
 
-The shared library ``ortops/sparse/cpu/libortops_optim_cpu2.so`` must be
+The shared library ``yaourt/ortops/sparse/cpu/libortops_optim_cpu2.so`` must be
 built with ``cmake --build cmake`` before running this test.  Tests are
 skipped when the library is absent.
 """
@@ -24,7 +24,7 @@ elif _SYSTEM == "Darwin":
     _LIB_NAME = "libortops_optim_cpu2.dylib"
 else:
     _LIB_NAME = "libortops_optim_cpu2.so"
-_LIB_PATH = os.path.join(_REPO_ROOT, "ortops", "sparse", "cpu", _LIB_NAME)
+_LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", _LIB_NAME)
 _OP_DOMAIN = "yaourt.ortops.optim.cpu"
 
 
