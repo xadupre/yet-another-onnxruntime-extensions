@@ -1075,6 +1075,13 @@ def has_cuda_onnxruntime() -> bool:
         return False
 
 
+def requires_cuda_onnxruntime(msg: str = "") -> Callable:
+    """Skips a unit test if CUDAExecutionProvider is not available in :epkg:`onnxruntime`."""
+    if not has_cuda_onnxruntime():
+        return unittest.skip(msg or "CUDAExecutionProvider not available in onnxruntime")
+    return lambda x: x
+
+
 def has_onnxruntime_training(push_back_batch: bool = False):
     """Tells if onnxruntime_training is installed."""
     try:
