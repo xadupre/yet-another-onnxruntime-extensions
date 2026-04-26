@@ -80,7 +80,7 @@ def hhistograms(
     x_max = df[metric].max()
     if "min_exec" in df.columns:
         x_min = (df["min_exec"].min() + x_min) / 2
-    ax.set_xlim([x_min, x_max])
+    ax.set_xlim((x_min, x_max))
 
     if fig is not None:
         fig.tight_layout()
