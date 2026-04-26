@@ -133,11 +133,11 @@ class TestCudaCustomOps(ExtTestCase):
         """ReplaceZero replaces zero entries with the given scalar."""
         import onnx
 
-        shape = (3, 6)
+        shape = (2, 3)
         model = _make_unary_model("ReplaceZero", onnx.TensorProto.FLOAT, shape, by=7.0)
         sess = _make_inference_session(model)
 
-        x = numpy.array([[1.0, 0.0, 2.0], [0.0, 5.0, 0.0]], dtype=numpy.float32).reshape(shape)
+        x = numpy.array([[1.0, 0.0, 2.0], [0.0, 5.0, 0.0]], dtype=numpy.float32)
         (y,) = sess.run(None, {"X": x})
         expected = numpy.where(x == 0.0, 7.0, x)
         numpy.testing.assert_allclose(y, expected, rtol=1e-5)

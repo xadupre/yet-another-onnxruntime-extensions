@@ -183,9 +183,7 @@ static bool _check_shape(const std::vector<int64_t> &shape) {
   for (size_t i = 0; i < shape.size(); ++i) {
     if (shape[i] != 1) {
       met_non_one = true;
-      break;
-    }
-    if (shape[i] == 1 && met_non_one) {
+    } else if (met_non_one) {
       return false;
     }
   }
