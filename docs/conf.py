@@ -17,6 +17,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
     "sphinx_issues",
+    "sphinx_runpython.runpython",
     "matplotlib.sphinxext.plot_directive",
 ]
 
