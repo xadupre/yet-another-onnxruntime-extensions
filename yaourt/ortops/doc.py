@@ -1,4 +1,4 @@
-"""Catalogue of CPU custom ORT ops, derived from C++ source files.
+"""Documentation catalogue of CPU custom ORT ops, derived from C++ source files.
 
 Structural metadata (op name, domain, execution provider, input/output names
 and element types) is parsed directly from the C++ lite-API source files at
@@ -16,6 +16,10 @@ Supported C++ sources
 - ``ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
   signatures and ``///`` doc comments used to extract input/output argument
   names, element types, and prose descriptions.
+
+The :func:`print_cpu_ops` function renders the catalogue as plain text and is
+intended to be called from a ``.. runpython::`` block in the Sphinx docs so
+that the rendered output is always in sync with the C++ source.
 """
 
 from __future__ import annotations
@@ -102,7 +106,7 @@ class OrtOpDesc:
 
 def _repo_root() -> str:
     """Returns the repository root directory derived from this file's location."""
-    # This module lives at yaourt/ortops/cpu.py; root is two levels up.
+    # This module lives at yaourt/ortops/doc.py; root is two levels up.
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -298,3 +302,41 @@ def _build_cpu_ops(
 #: All CPU custom ops provided by *yet-another-onnxruntime-extensions*, keyed
 #: by op name.  Populated at import time by parsing the C++ source files.
 CPU_OPS: dict[str, OrtOpDesc] = _build_cpu_ops()
+
+
+def print_cpu_ops() -> None:
+    """Prints the CPU custom-op catalogue to stdout.
+
+    Renders :data:`CPU_OPS` as plain text suitable for a ``.. runpython::``
+    block in the Sphinx documentation, ensuring the rendered output is always
+    derived from the C++ source files.
+
+    .. runpython::
+        :showcode:
+
+        from yaourt.ortops.doc import print_cpu_ops
+        print_cpu_ops()
+    """
+    if not CPU_OPS:
+        print("No CPU ops found (C++ source tree not present).")
+        return
+    for op_name, op in sorted(CPU_OPS.items()):
+        print(f"{op_name}")
+        print(f"  domain   : {op.domain}")
+        print(f"  provider : {op.execution_provider}")
+        print(f"  version  : {op.since_version}")
+        if op.doc:
+            for line in op.doc.splitlines():
+                print(f"  {line}")
+        if op.inputs:
+            print("  inputs:")
+            for inp in op.inputs:
+                desc = f" — {inp.description}" if inp.description else ""
+                print(f"    {inp.name} ({inp.dtype}){desc}")
+        if op.outputs:
+            print("  outputs:")
+            for out in op.outputs:
+                desc = f" — {out.description}" if out.description else ""
+                print(f"    {out.name} ({out.dtype}){desc}")
+        print()
+
