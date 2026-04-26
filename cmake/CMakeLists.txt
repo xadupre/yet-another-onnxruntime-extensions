@@ -47,6 +47,7 @@ message(STATUS "ORTOPS_INCLUDE_DIR=${ORTOPS_INCLUDE_DIR}")
 
 include("targets/ortops_optim_cpu.cmake")
 include("targets/ortops_optim_cpu2.cmake")
+include("targets/ortops_optim_cuda.cmake")
 
 #
 # Final
