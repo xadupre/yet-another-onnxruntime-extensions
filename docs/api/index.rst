@@ -6,7 +6,7 @@ API Reference
 
     yaourt
     yaourt.doc
-    plot/yaourt.plot
-    plot/yaourt.plot.benchmark
+    plot/index
     tools/index
+    ortops/index
     reference/index
