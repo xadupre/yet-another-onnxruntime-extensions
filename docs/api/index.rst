@@ -9,3 +9,4 @@ API Reference
     plot/index
     tools/index
     ortops/index
+    reference/index
