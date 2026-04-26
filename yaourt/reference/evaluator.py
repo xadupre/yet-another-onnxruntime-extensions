@@ -202,11 +202,11 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
         for cl in new_ops:
             if cl.__name__ not in renamed and cl.__name__ not in versioned:
                 modified.append(cl)
-        for k, v in best.items():
+        for k, val in best.items():
             atts: Dict[str, Any] = {"domain": k[0]}
-            bases = (v[1],)
-            if not hasattr(v[1], "op_schema"):
-                atts["op_schema"] = get_schema(k[1], v[0], domain=v[1].op_domain)
+            bases = (val[1],)
+            if not hasattr(val[1], "op_schema"):
+                atts["op_schema"] = get_schema(k[1], val[0], domain=val[1].op_domain)
             new_cl = type(k[1], bases, atts)
             modified.append(new_cl)
 
@@ -288,9 +288,9 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
         results.update(self.rt_inits_)
         results.update(feed_inputs)
         for k, v in self.rt_inits_.items():
-            self._log(2, " +C %s: %s", k, v)
+            self._log(2, " +C %s: %s", k, v)  # type: ignore[arg-type]
         for k, v in feed_inputs.items():
-            self._log(2, " +I %s: %s", k, v)
+            self._log(2, " +I %s: %s", k, v)  # type: ignore[arg-type]
 
         # step 2: execute nodes
         for node in self.rt_nodes_:
