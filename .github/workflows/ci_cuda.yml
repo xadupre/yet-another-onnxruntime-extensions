@@ -32,19 +32,11 @@ jobs:
       - name: Install cuBLAS development libraries
         run: sudo apt-get install -y libcublas-dev-12-4
 
-      - name: cmake configure
-        run: cmake -S cmake -B _build -DCMAKE_BUILD_TYPE=Release
-
-      - name: cmake build
-        run: cmake --build _build --config Release --verbose
+      - name: Install package (triggers cmake CUDA build)
+        run: pip install -e .[dev]
 
       - name: Verify CUDA shared library was built
         run: test -f yaourt/ortops/optim/cuda/libortops_optim_cuda.so
-
-      - name: Install Python dependencies
-        env:
-          SKIP_CMAKE: "1"
-        run: pip install -e .[dev]
 
       - name: pip freeze
         run: pip freeze

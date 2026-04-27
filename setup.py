@@ -4,8 +4,7 @@ When ``pip install .`` or ``pip install -e .`` is run, this module triggers
 cmake to configure and build the shared-library custom ops so they are
 available alongside the Python sources without a separate build step.
 
-Set the environment variable ``SKIP_CMAKE=1`` to skip the cmake build step
-(useful in CI where cmake is run explicitly before pip install).
+Set the environment variable ``SKIP_CMAKE=1`` to skip the cmake build step.
 """
 
 from __future__ import annotations
@@ -57,11 +56,9 @@ def _run_cmake() -> None:
         print("yaourt: cmake build ...", flush=True)
         subprocess.run(build_cmd, check=True, cwd=str(_HERE))
     except subprocess.CalledProcessError as exc:
-        print(
-            f"WARNING: cmake step failed ({exc}); "
-            "the C++ custom-op libraries will not be built.",
-            file=sys.stderr,
-        )
+        raise RuntimeError(
+            f"cmake step failed ({exc}); the C++ custom-op libraries were not built."
+        ) from exc
 
 
 class BuildPy(_build_py):
