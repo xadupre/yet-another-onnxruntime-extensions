@@ -249,14 +249,19 @@ def _make_tri_matrix_model(dtype_onnx: int) -> bytes:
 
 
 @unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
+class TestCudaLibExists(ExtTestCase):
+    """Verifies the CUDA shared library was built and is accessible on disk."""
+
+    def test_lib_path_exists(self):
+        """Verifies the library file is present on disk."""
+        self.assertTrue(os.path.exists(_LIB_PATH), f"Library not found: {_LIB_PATH}")
+
+
+@unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
 @requires_cuda_onnxruntime()
 @requires_onnxruntime("1.18")
 class TestCudaCustomOps(ExtTestCase):
     """Tests for CUDA custom ops (NegXplus1, ReplaceZero, MulSigmoid, etc.)."""
-
-    def test_lib_path_exists(self):
-        """Sanity check: the library file is present on disk."""
-        self.assertTrue(os.path.exists(_LIB_PATH), f"Library not found: {_LIB_PATH}")
 
     def test_negxplus1_float32(self):
         """NegXplus1 computes 1 - x correctly for float32."""

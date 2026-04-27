@@ -1,0 +1,39 @@
+name: ci-3-ortops-cuda
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cuda_build:
+    name: CUDA build and test (ubuntu-22.04)
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup CUDA toolkit
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          cuda: "12.4.0"
+
+      - name: Install package (triggers cmake CUDA build)
+        run: pip install -e .[dev]
+
+      - name: pip freeze
+        run: pip freeze
+
+      - name: Run CUDA ortops tests
+        run: pytest --durations=10 unittests/ortops/test_cuda_ops.py
