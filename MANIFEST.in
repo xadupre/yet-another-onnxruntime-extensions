@@ -1,0 +1,2 @@
+recursive-include cmake *.cmake *.txt
+recursive-include unittests/cpp *.cpp *.h *.hpp

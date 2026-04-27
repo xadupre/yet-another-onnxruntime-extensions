@@ -18,7 +18,7 @@ include("load_externals.cmake")
 
 message(STATUS "--------------------------------------------")
 set(ROOT_PROJECT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/..)
-set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cpp/include)
+set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../yaourt/cpp/include)
 message(STATUS "ROOT_PROJECT_PATH=${ROOT_PROJECT_PATH}")
 message(STATUS "ROOT_INCLUDE_PATH=${ROOT_INCLUDE_PATH}")
 message(STATUS "--------------------------------------------")

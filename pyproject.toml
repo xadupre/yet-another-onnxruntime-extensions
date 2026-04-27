@@ -41,6 +41,11 @@ docs = [
 where = ["."]
 include = ["yaourt*"]
 
+[tool.setuptools.package-data]
+"yaourt.ortops.sparse.cpu_v1" = ["*.so", "*.dll", "*.dylib"]
+"yaourt.ortops.sparse.cpu" = ["*.so", "*.dll", "*.dylib"]
+"yaourt.ortops.optim.cuda" = ["*.so", "*.dll", "*.dylib"]
+
 [tool.pytest.ini_options]
 testpaths = ["unittests"]
 
