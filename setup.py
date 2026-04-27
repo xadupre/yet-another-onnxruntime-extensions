@@ -30,19 +30,30 @@ def _run_cmake() -> None:
         )
         return
 
+    cmake_src = _HERE / "cmake"
+    if not cmake_src.is_dir():
+        print(
+            "WARNING: cmake source directory not found; "
+            "the C++ custom-op libraries will not be built.",
+            file=sys.stderr,
+        )
+        return
+
     build_dir = _HERE / "_build"
-    configure_cmd = [
-        cmake,
-        f"-S{_HERE / 'cmake'}",
-        f"-B{build_dir}",
-        "-DCMAKE_BUILD_TYPE=Release",
-    ]
+    configure_cmd = [cmake, f"-S{cmake_src}", f"-B{build_dir}", "-DCMAKE_BUILD_TYPE=Release"]
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 
-    print("yaourt: cmake configure ...", flush=True)
-    subprocess.run(configure_cmd, check=True, cwd=str(_HERE))
-    print("yaourt: cmake build ...", flush=True)
-    subprocess.run(build_cmd, check=True, cwd=str(_HERE))
+    try:
+        print("yaourt: cmake configure ...", flush=True)
+        subprocess.run(configure_cmd, check=True, cwd=str(_HERE))
+        print("yaourt: cmake build ...", flush=True)
+        subprocess.run(build_cmd, check=True, cwd=str(_HERE))
+    except subprocess.CalledProcessError as exc:
+        print(
+            f"WARNING: cmake step failed ({exc}); "
+            "the C++ custom-op libraries will not be built.",
+            file=sys.stderr,
+        )
 
 
 class BuildPy(_build_py):
