@@ -3,10 +3,14 @@
 When ``pip install .`` or ``pip install -e .`` is run, this module triggers
 cmake to configure and build the shared-library custom ops so they are
 available alongside the Python sources without a separate build step.
+
+Set the environment variable ``SKIP_CMAKE=1`` to skip the cmake build step
+(useful in CI where cmake is run explicitly before pip install).
 """
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -21,6 +25,10 @@ _HERE = Path(__file__).parent.resolve()
 
 def _run_cmake() -> None:
     """Configures and builds the C++ custom-op shared libraries via cmake."""
+    if os.environ.get("SKIP_CMAKE"):
+        print("yaourt: cmake build skipped (SKIP_CMAKE is set).", flush=True)
+        return
+
     cmake = shutil.which("cmake")
     if cmake is None:
         print(
