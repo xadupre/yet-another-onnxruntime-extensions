@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
   unittest_cpp
-  ../cpp/unittests/test_make_string.cpp)
+  ../yaourt/cpp/unittests/test_make_string.cpp)
 
 target_include_directories(
   unittest_cpp
