@@ -3,11 +3,16 @@
 #
 message(STATUS "+ KERNEL yaourt.ortops.optim.cuda")
 
+option(USE_CUDA "Build CUDA custom-op extensions" OFF)
+if(NOT USE_CUDA)
+  message(STATUS "USE_CUDA=OFF - skipping yaourt.ortops.optim.cuda (set -DUSE_CUDA=ON to enable)")
+  return()
+endif()
+
 include(CheckLanguage)
 check_language(CUDA)
 if(NOT CMAKE_CUDA_COMPILER)
-  message(STATUS "No CUDA compiler found - skipping yaourt.ortops.optim.cuda")
-  return()
+  message(FATAL_ERROR "USE_CUDA=ON but no CUDA compiler was found - install the CUDA toolkit and ensure nvcc is on PATH")
 endif()
 
 enable_language(CUDA)

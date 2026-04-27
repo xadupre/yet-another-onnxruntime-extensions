@@ -47,7 +47,16 @@ def _run_cmake() -> None:
         return
 
     build_dir = _HERE / "_build"
-    configure_cmd = [cmake, f"-S{cmake_src}", f"-B{build_dir}", "-DCMAKE_BUILD_TYPE=Release"]
+    extra_flags = []
+    if os.environ.get("USE_CUDA"):
+        extra_flags.append("-DUSE_CUDA=ON")
+    configure_cmd = [
+        cmake,
+        f"-S{cmake_src}",
+        f"-B{build_dir}",
+        "-DCMAKE_BUILD_TYPE=Release",
+        *extra_flags,
+    ]
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 
     try:
