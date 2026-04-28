@@ -45,9 +45,9 @@ set(ORTOPS_INCLUDE_DIR "${ROOT_INCLUDE_PATH}")
 message(STATUS "ROOT_INCLUDE_PATH=${ROOT_INCLUDE_PATH}")
 message(STATUS "ORTOPS_INCLUDE_DIR=${ORTOPS_INCLUDE_DIR}")
 
-include("targets/ortops_optim_cpu.cmake")
-include("targets/ortops_optim_cpu2.cmake")
-include("targets/ortops_optim_cuda.cmake")
+include("targets/ortops_sparse_cpu.cmake")
+include("targets/ortops_sparse_cpu2.cmake")
+include("targets/ortops_fused_kernel_cuda.cmake")
 
 #
 # Final

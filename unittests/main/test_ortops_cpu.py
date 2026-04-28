@@ -8,7 +8,7 @@ from yaourt.ext_test_case import ExtTestCase
 
 # Absolute path to the C++ source files used by the parser.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_LIB_CC = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc")
+_LIB_CC = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", "ort_sparse_cpu2_lib.cc")
 _HEADER = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu", "ort_sparse_lite.h")
 
 
@@ -30,13 +30,13 @@ class TestOrtOpsCpuCatalogue(ExtTestCase):
         from yaourt.ortops.doc import CPU_OPS
 
         op = CPU_OPS["DenseToSparse"]
-        self.assertEqual(op.domain, "yaourt.ortops.optim.cpu")
+        self.assertEqual(op.domain, "yaourt.ortops.sparse.cpu")
 
     def test_sparse_to_dense_domain(self):
         from yaourt.ortops.doc import CPU_OPS
 
         op = CPU_OPS["SparseToDense"]
-        self.assertEqual(op.domain, "yaourt.ortops.optim.cpu")
+        self.assertEqual(op.domain, "yaourt.ortops.sparse.cpu")
 
     def test_dense_to_sparse_execution_provider(self):
         from yaourt.ortops.doc import CPU_OPS
@@ -114,7 +114,7 @@ class TestParseLiteLibCc(ExtTestCase):
         from yaourt.ortops.doc import _parse_lite_lib_cc
 
         domain, _ = _parse_lite_lib_cc(_LIB_CC)
-        self.assertEqual(domain, "yaourt.ortops.optim.cpu")
+        self.assertEqual(domain, "yaourt.ortops.sparse.cpu")
 
     def test_returns_two_registrations(self):
         from yaourt.ortops.doc import _parse_lite_lib_cc

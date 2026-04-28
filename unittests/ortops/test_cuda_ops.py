@@ -1,7 +1,7 @@
 """
 Tests for the CUDA custom ORT ops built by cmake.
 
-The shared library ``yaourt/ortops/optim/cuda/libortops_optim_cuda.so`` must be
+The shared library ``yaourt/ortops/fused_kernel/cuda/libortops_fused_kernel_cuda.so`` must be
 built with ``cmake --build cmake`` before running this test.  Tests are
 skipped when the library is absent or when no CUDA device is available.
 """
@@ -18,13 +18,13 @@ from yaourt.ext_test_case import ExtTestCase, requires_cuda_onnxruntime, require
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
-    _LIB_NAME = "ortops_optim_cuda.dll"
+    _LIB_NAME = "ortops_fused_kernel_cuda.dll"
 elif _SYSTEM == "Darwin":
-    _LIB_NAME = "libortops_optim_cuda.dylib"
+    _LIB_NAME = "libortops_fused_kernel_cuda.dylib"
 else:
-    _LIB_NAME = "libortops_optim_cuda.so"
-_LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "optim", "cuda", _LIB_NAME)
-_OP_DOMAIN = "yaourt.ortops.optim.cuda"
+    _LIB_NAME = "libortops_fused_kernel_cuda.so"
+_LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "fused_kernel", "cuda", _LIB_NAME)
+_OP_DOMAIN = "yaourt.ortops.fused_kernel.cuda"
 
 
 def _lib_available() -> bool:

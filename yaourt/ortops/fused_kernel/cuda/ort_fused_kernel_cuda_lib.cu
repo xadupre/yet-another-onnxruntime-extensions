@@ -3,7 +3,7 @@
 #include <mutex>
 #include <vector>
 
-#include "ort_optim_cuda_lib.h"
+#include "ort_fused_kernel_cuda_lib.h"
 #include "ortapi_version.h"
 
 #include "add_or_mul_shared_input.h"
@@ -21,7 +21,7 @@
 #include "transpose_cast_2d.h"
 #include "tri_matrix.h"
 
-static const char *c_OpDomain = "yaourt.ortops.optim.cuda";
+static const char *c_OpDomain = "yaourt.ortops.fused_kernel.cuda";
 
 static void AddOrtCustomOpDomainToContainer(Ort::CustomOpDomain &&domain) {
   static std::vector<Ort::CustomOpDomain> ort_custom_op_domain_container;
