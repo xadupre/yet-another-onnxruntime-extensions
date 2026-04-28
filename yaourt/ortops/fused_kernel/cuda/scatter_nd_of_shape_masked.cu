@@ -66,7 +66,7 @@ __global__ void masked_addition_inplace_kernelN(T *__restrict__ output_data,
   }
 
   int begin = 0;
-  int end = std::min(begin + NTHREAD, (int)indice_size);
+  int end = indice_size < NTHREAD ? indice_size : NTHREAD;
   while (begin < end && (end == begin + NTHREAD)) {
     shared_indices[tid] = indices_data[tid + begin];
     __syncthreads();
@@ -79,7 +79,7 @@ __global__ void masked_addition_inplace_kernelN(T *__restrict__ output_data,
     }
 
     begin = end;
-    end = std::min(begin + NTHREAD, (int)indice_size);
+    end = indice_size < begin + NTHREAD ? indice_size : begin + NTHREAD;
   }
 
   for (size_t i = begin; i < indice_size; ++i) {
