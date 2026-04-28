@@ -1,4 +1,3 @@
-// Adapted from https://github.com/sdpython/onnx-extended
 #include "add_or_mul_shared_input.h"
 #include "common/c_op_helpers.h"
 #include "common/common_kernels.h"

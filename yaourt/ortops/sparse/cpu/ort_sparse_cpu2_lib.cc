@@ -1,6 +1,5 @@
 // Source: https://github.com/microsoft/onnxruntime/tree/main/
 // onnxruntime/test/testdata/custom_op_library
-// Adapted from https://github.com/sdpython/onnx-extended
 
 #include <memory>
 #include <mutex>

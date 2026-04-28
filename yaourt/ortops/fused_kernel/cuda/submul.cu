@@ -1,4 +1,3 @@
-// Adapted from https://github.com/sdpython/onnx-extended
 #include "common/c_op_helpers.h"
 #include "common/common_kernels.h"
 #include "cuda/common_kernels_cuda.h"

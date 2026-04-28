@@ -1,7 +1,5 @@
 #pragma once
 
-// Adapted from https://github.com/sdpython/onnx-extended
-
 #include <cstdint>
 #include <vector>
 
