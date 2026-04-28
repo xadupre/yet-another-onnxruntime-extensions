@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -24,37 +23,33 @@ def _run_cmake() -> None:
     """Configures and builds the C++ custom-op shared libraries via cmake."""
     cmake = shutil.which("cmake")
     if cmake is None:
-        print(
-            "WARNING: cmake executable not found on PATH; "
-            "the C++ custom-op libraries will not be built.",
-            file=sys.stderr,
+        raise RuntimeError(
+            "cmake executable not found on PATH; install cmake and re-run the build."
         )
-        return
 
     cmake_src = _HERE / "cmake"
     if not cmake_src.is_dir():
-        print(
-            "WARNING: cmake source directory not found; "
-            "the C++ custom-op libraries will not be built.",
-            file=sys.stderr,
+        raise RuntimeError(
+            f"cmake source directory not found at {cmake_src}; "
+            "the repository may be incomplete."
         )
-        return
 
     build_dir = _HERE / "_build"
     configure_cmd = [cmake, f"-S{cmake_src}", f"-B{build_dir}", "-DCMAKE_BUILD_TYPE=Release"]
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 
+    print("yaourt: cmake configure ...", flush=True)
     try:
-        print("yaourt: cmake configure ...", flush=True)
         subprocess.run(configure_cmd, check=True, cwd=str(_HERE))
-        print("yaourt: cmake build ...", flush=True)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"cmake configure step failed with exit code {exc.returncode}."
+        ) from exc
+    print("yaourt: cmake build ...", flush=True)
+    try:
         subprocess.run(build_cmd, check=True, cwd=str(_HERE))
     except subprocess.CalledProcessError as exc:
-        print(
-            f"WARNING: cmake step failed ({exc}); "
-            "the C++ custom-op libraries will not be built.",
-            file=sys.stderr,
-        )
+        raise RuntimeError(f"cmake build step failed with exit code {exc.returncode}.") from exc
 
 
 class BuildPy(_build_py):
