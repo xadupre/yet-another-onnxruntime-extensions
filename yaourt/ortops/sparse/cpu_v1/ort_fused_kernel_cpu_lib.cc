@@ -5,11 +5,11 @@
 #include <mutex>
 #include <vector>
 
-#include "ort_optim_cpu_lib.h"
+#include "ort_fused_kernel_cpu_lib.h"
 #include "ort_sparse.hpp"
 #include "ortapi_version.h"
 
-static const char *c_OpDomain = "yaourt.ortops.optim.cpu";
+static const char *c_OpDomain = "yaourt.ortops.fused_kernel.cpu";
 
 static void AddOrtCustomOpDomainToContainer(Ort::CustomOpDomain &&domain) {
   static std::vector<Ort::CustomOpDomain> ort_custom_op_domain_container;

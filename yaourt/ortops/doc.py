@@ -11,7 +11,7 @@ the kernel declarations and are never duplicated in Python.
 
 Supported C++ sources
 ---------------------
-- ``yaourt/ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` — provides the op domain and the
+- ``yaourt/ortops/sparse/cpu/ort_fused_kernel_cpu2_lib.cc`` — provides the op domain and the
   ``CreateLiteCustomOp`` registrations (op name → kernel class + exec provider).
 - ``yaourt/ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
   signatures and ``///`` doc comments used to extract input/output argument
@@ -251,7 +251,7 @@ def _build_cpu_ops(
     comments in the header file via :func:`_parse_lite_header_docs`.
 
     :param lib_cc_path: path to the lite-API lib ``.cc`` file; defaults to
-        ``yaourt/ortops/sparse/cpu/ort_optim_cpu2_lib.cc`` inside the repo root.
+        ``yaourt/ortops/sparse/cpu/ort_fused_kernel_cpu2_lib.cc`` inside the repo root.
     :param header_path: path to the lite-API ``.h`` header; defaults to
         ``yaourt/ortops/sparse/cpu/ort_sparse_lite.h`` inside the repo root.
     :returns: dict mapping op name to :class:`OrtOpDesc`; returns an empty
@@ -260,7 +260,7 @@ def _build_cpu_ops(
     root = _repo_root()
     if lib_cc_path is None:
         lib_cc_path = os.path.join(
-            root, "yaourt", "ortops", "sparse", "cpu", "ort_optim_cpu2_lib.cc"
+            root, "yaourt", "ortops", "sparse", "cpu", "ort_fused_kernel_cpu2_lib.cc"
         )
     if header_path is None:
         header_path = os.path.join(root, "yaourt", "ortops", "sparse", "cpu", "ort_sparse_lite.h")
