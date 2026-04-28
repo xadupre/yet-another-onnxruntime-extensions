@@ -1,7 +1,7 @@
-#include "onnx_extended_helpers.h"
+#include "yaourt_helpers.h"
 #include <gtest/gtest.h>
 
-using namespace onnx_extended_helpers;
+using namespace yaourt_helpers;
 
 TEST(TestMakeString, EmptyString) {
   std::string result = MakeString("");

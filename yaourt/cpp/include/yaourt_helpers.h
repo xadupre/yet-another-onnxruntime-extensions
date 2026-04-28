@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 
-namespace onnx_extended_helpers {
+namespace yaourt_helpers {
 
 std::string Version();
 
@@ -93,19 +93,19 @@ template <typename... Args> inline std::string MakeString(const Args &...args) {
 
 #if !defined(_THROW_DEFINED)
 #define EXT_THROW(...)                                                                         \
-  throw std::runtime_error(onnx_extended_helpers::MakeString(                                  \
-      "[yaourt] ", onnx_extended_helpers::MakeString(__VA_ARGS__)));
+  throw std::runtime_error(yaourt_helpers::MakeString(                                  \
+      "[yaourt] ", yaourt_helpers::MakeString(__VA_ARGS__)));
 #define _THROW_DEFINED
 #endif
 
 #if !defined(_ENFORCE_DEFINED)
 #define EXT_ENFORCE(cond, ...)                                                                 \
   if (!(cond))                                                                                 \
-    throw std::runtime_error(onnx_extended_helpers::MakeString(                                \
+    throw std::runtime_error(yaourt_helpers::MakeString(                                \
         "`", #cond, "` failed. ",                                                              \
-        onnx_extended_helpers::MakeString("[yaourt] ",                                         \
-                                          onnx_extended_helpers::MakeString(__VA_ARGS__))));
+        yaourt_helpers::MakeString("[yaourt] ",                                         \
+                                          yaourt_helpers::MakeString(__VA_ARGS__))));
 #define _ENFORCE_DEFINED
 #endif
 
-} // namespace onnx_extended_helpers
+} // namespace yaourt_helpers
