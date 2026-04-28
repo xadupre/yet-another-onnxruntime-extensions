@@ -1,7 +1,7 @@
 """
 Tests for the DenseToSparse and SparseToDense custom ORT ops built by cmake.
 
-The shared library ``yaourt/ortops/sparse/cpu_v1/libortops_fused_kernel_cpu.so`` must be
+The shared library ``yaourt/ortops/sparse/cpu_v1/libortops_sparse_cpu.so`` must be
 built with ``cmake --build cmake`` before running this test.  Tests are
 skipped when the library is absent.
 """
@@ -18,13 +18,13 @@ from yaourt.ext_test_case import ExtTestCase, requires_onnxruntime
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
-    _LIB_NAME = "ortops_fused_kernel_cpu.dll"
+    _LIB_NAME = "ortops_sparse_cpu.dll"
 elif _SYSTEM == "Darwin":
-    _LIB_NAME = "libortops_fused_kernel_cpu.dylib"
+    _LIB_NAME = "libortops_sparse_cpu.dylib"
 else:
-    _LIB_NAME = "libortops_fused_kernel_cpu.so"
+    _LIB_NAME = "libortops_sparse_cpu.so"
 _LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "sparse", "cpu_v1", _LIB_NAME)
-_OP_DOMAIN = "yaourt.ortops.fused_kernel.cpu"
+_OP_DOMAIN = "yaourt.ortops.sparse.cpu"
 
 
 def _lib_available() -> bool:
