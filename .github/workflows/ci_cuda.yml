@@ -29,9 +29,6 @@ jobs:
         with:
           cuda: "12.4.0"
 
-      - name: Install cuBLAS development libraries
-        run: sudo apt-get install -y libcublas-dev-12-4
-
       - name: Install package (triggers cmake CUDA build)
         env:
           USE_CUDA: "1"
