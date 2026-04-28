@@ -74,9 +74,9 @@ class Develop(_develop):
 
 
 class BuildExt(_build_ext):
-    """Runs the cmake build before the standard build_ext step.
+    """Runs the CMake build before the standard build_ext step.
 
-    This makes ``python setup.py build_ext --inplace`` trigger cmake so
+    This makes ``python setup.py build_ext --inplace`` trigger CMake so
     that the C++ shared-library custom ops are compiled and copied into
     the source tree before any extension processing occurs.
     """
