@@ -20,9 +20,7 @@ def hhistograms(
 ) -> matplotlib.axes.Axes:
     """
     Plots horizontal histograms with error bars for benchmark comparisons.
-
     Shows the *limit* best-performing configurations alongside the baseline.
-    Inspired by ``onnx_extended.plotting.benchmark.hhistograms``.
 
     :param df: DataFrame containing benchmark results; must have columns
         matching *keys* and *metric*, plus ``min_exec`` and ``max_exec``

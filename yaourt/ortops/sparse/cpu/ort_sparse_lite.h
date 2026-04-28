@@ -2,7 +2,6 @@
 
 // Source: https://github.com/microsoft/onnxruntime/tree/main/
 // onnxruntime/test/testdata/custom_op_library
-// Adapted from https://github.com/sdpython/onnx-extended
 
 #define ORT_API_MANUAL_INIT
 #include <onnxruntime_cxx_api.h>

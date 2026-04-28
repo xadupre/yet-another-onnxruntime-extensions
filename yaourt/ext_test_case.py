@@ -1069,7 +1069,7 @@ def has_cuda_onnxruntime() -> bool:
     """Returns True if CUDAExecutionProvider is available in :epkg:`onnxruntime`."""
     try:
         import onnxruntime
-
+        print("****", onnxruntime.get_available_providers())
         return "CUDAExecutionProvider" in onnxruntime.get_available_providers()
     except ImportError:
         return False

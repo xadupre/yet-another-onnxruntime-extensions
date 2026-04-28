@@ -5,7 +5,7 @@
 #include <onnxruntime_cxx_api.h>
 #undef ORT_API_MANUAL_INIT
 
-#include "onnx_extended_helpers.h"
+#include "yaourt_helpers.h"
 
 #ifdef CUDA_VERSION
 #include <cuda_fp16.h>
@@ -63,7 +63,7 @@ inline void _ThrowOnError_(OrtStatus *ort_status, const char *filename, int line
       std::string message(api.GetErrorMessage(ort_status));
       api.ReleaseStatus(ort_status);
       if (code != ORT_OK) {
-        throw std::runtime_error(onnx_extended_helpers::MakeString(
+        throw std::runtime_error(yaourt_helpers::MakeString(
             "error: onnxruntime(", code, "), ", message, "\n    ", filename, ":", line));
       }
     }

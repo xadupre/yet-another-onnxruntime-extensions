@@ -1,7 +1,5 @@
 """
 Functions to process profiling output from onnxruntime.
-
-Ported from https://github.com/sdpython/onnx-extended/blob/main/onnx_extended/tools/js_profile.py
 """
 
 from __future__ import annotations

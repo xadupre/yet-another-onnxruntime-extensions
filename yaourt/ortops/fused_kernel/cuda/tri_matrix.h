@@ -1,4 +1,3 @@
-// Adapted from https://github.com/sdpython/onnx-extended
 #pragma once
 
 #include "common/common_kernels.h"

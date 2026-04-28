@@ -1,5 +1,3 @@
-// Adapted from https://github.com/sdpython/onnx-extended
-
 #include <mutex>
 #include <vector>
 

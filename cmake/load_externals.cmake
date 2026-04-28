@@ -6,7 +6,7 @@
 message(STATUS "-------------------")
 
 if(NOT ORT_VERSION)
-  set(ORT_VERSION 1.25.0)
+  set(ORT_VERSION 1.25.1)
   set(ORT_VERSION_INT 1250)
 endif()
 
