@@ -32,7 +32,7 @@ jobs:
       - name: Install package (triggers cmake CUDA build)
         env:
           USE_CUDA: "1"
-        run: pip install -e .[dev]
+        run: pip install --no-build-isolation -e .[dev]
 
       - name: Verify CUDA shared library was built
         run: test -f yaourt/ortops/optim/cuda/libortops_optim_cuda.so

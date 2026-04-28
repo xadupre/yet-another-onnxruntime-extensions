@@ -16,6 +16,7 @@ if(NOT CMAKE_CUDA_COMPILER)
 endif()
 
 enable_language(CUDA)
+find_package(CUDAToolkit REQUIRED)
 
 if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD 17)
@@ -64,8 +65,8 @@ target_link_libraries(
   ortops_optim_cuda
   PRIVATE
   common
-  cublas
-  cublasLt)
+  CUDA::cublas
+  CUDA::cublasLt)
 
 set_property(TARGET ortops_optim_cuda PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_target_properties(ortops_optim_cuda PROPERTIES CXX_VISIBILITY_PRESET hidden)
