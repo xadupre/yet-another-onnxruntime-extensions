@@ -10,7 +10,11 @@ rm dummy*.onnx
 rm onnx*.md
 
 if [ "$1" == "--all" ]; then
+    rm yaourt/ortops/fused_kernel/cuda/*.so
+    rm yaourt/ortops/sparse/cpu/*.so
+    rm yaourt/ortops/sparse/cpu_v1/*.so
     rm -rf dist/
+    rm -rf _build/
     rm -rf build/
     rm -rf .ruff_cache/
     rm -rf .pytest_cache/

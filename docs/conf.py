@@ -24,7 +24,7 @@ extensions = [
 sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_examples"]}
 
 # templates_path = ["_templates"]
-exclude_patterns = ["_build"]
+exclude_patterns = ["build"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_logo = "_static/logo.svg"

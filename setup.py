@@ -39,7 +39,7 @@ def _run_cmake() -> None:
         )
         return
 
-    build_dir = _HERE / "_build"
+    build_dir = _HERE / "build"
     configure_cmd = [cmake, f"-S{cmake_src}", f"-B{build_dir}", "-DCMAKE_BUILD_TYPE=Release"]
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 

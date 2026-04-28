@@ -35,15 +35,15 @@ jobs:
 
       - name: Configure cmake with coverage
         run: >
-          cmake -S cmake -B _build
+          cmake -S cmake -B build
           -DCMAKE_BUILD_TYPE=Debug
           -DENABLE_COVERAGE=ON
 
       - name: Build custom ops
-        run: cmake --build _build
+        run: cmake --build build
 
       - name: Run C++ unit tests
-        run: ctest --test-dir _build --output-on-failure
+        run: ctest --test-dir build --output-on-failure
 
       - name: Run ortops tests
         run: pytest --durations=10 unittests/ortops

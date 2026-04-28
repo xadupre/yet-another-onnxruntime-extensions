@@ -96,10 +96,10 @@ C++.  Configure and build them with CMake:
 
 .. code-block:: bash
 
-    cmake -S cmake -B _build -DCMAKE_BUILD_TYPE=Release
-    cmake --build _build --config Release
+    cmake -S cmake -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build --config Release
 
-The compiled shared library is placed under ``_build/`` and is automatically
+The compiled shared library is placed under ``build/`` and is automatically
 discovered by :func:`yaourt.ortops.get_ort_ext_libs`.
 
 Run the Tests
