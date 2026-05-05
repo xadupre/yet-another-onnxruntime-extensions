@@ -1070,7 +1070,6 @@ def has_cuda_onnxruntime() -> bool:
     try:
         import onnxruntime
 
-        print("****", onnxruntime.get_available_providers())
         return "CUDAExecutionProvider" in onnxruntime.get_available_providers()
     except ImportError:
         return False
