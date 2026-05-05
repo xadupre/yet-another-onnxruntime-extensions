@@ -19,6 +19,7 @@ from setuptools import setup
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.develop import develop as _develop
+from setuptools.dist import Distribution as _Distribution
 
 _HERE = Path(__file__).parent.resolve()
 
@@ -115,7 +116,23 @@ class BuildExt(_build_ext):
         super().run()
 
 
+class BinaryDistribution(_Distribution):
+    """Forces setuptools to tag the wheel as platform-specific.
+
+    The custom-op shared libraries are compiled by cmake and copied into
+    the source tree rather than through the normal Python C-extension
+    mechanism.  Without this override, setuptools would classify the
+    wheel as pure Python (``py3-none-any``), which is incorrect for a
+    package containing native binaries.
+    """
+
+    def has_ext_modules(self) -> bool:
+        """Signals that this distribution contains binary extensions."""
+        return True
+
+
 setup(
     name=_package_name(),
+    distclass=BinaryDistribution,
     cmdclass={"build_py": BuildPy, "develop": Develop, "build_ext": BuildExt},
 )

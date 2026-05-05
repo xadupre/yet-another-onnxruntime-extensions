@@ -126,3 +126,25 @@ project-excludes = [
     "yaourt/ext_test_case.py",
 ]
 ignore-missing-imports = ["pandas", "matplotlib", "matplotlib.axes", "matplotlib.pyplot", "matplotlib.patches"]
+
+[tool.cibuildwheel]
+# Build for CPython 3.11 through 3.13 only.
+build = "cp311-* cp312-* cp313-*"
+# Skip 32-bit builds, musl-based Linux, and PyPy.
+skip = "*-win32 *-manylinux_i686 *-musllinux* pp*"
+
+[tool.cibuildwheel.linux]
+# Build the standard manylinux wheels for x86_64 and aarch64.
+archs = ["x86_64", "aarch64"]
+# Ensure cmake is available inside manylinux containers.
+before-all = "yum install -y cmake"
+
+[tool.cibuildwheel.windows]
+# cmake is pre-installed on GitHub-hosted Windows runners.
+archs = ["AMD64"]
+
+[tool.cibuildwheel.macos]
+# cmake is pre-installed on GitHub-hosted macOS runners.
+# Only arm64 is supported: the cmake build always downloads the arm64 ORT
+# release, so cross-compiling for x86_64 would fail at link time.
+archs = ["arm64"]
