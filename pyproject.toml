@@ -145,4 +145,9 @@ archs = ["AMD64"]
 
 [tool.cibuildwheel.macos]
 # cmake is pre-installed on GitHub-hosted macOS runners.
-archs = ["x86_64", "arm64"]
+# Only arm64 is supported: the cmake build always downloads the arm64 ORT
+# release, so cross-compiling for x86_64 would fail at link time.
+# cp310 is also skipped: macOS arm64 Python 3.10 requires a deployment
+# target that conflicts with the cmake build's OSX_DEPLOYMENT_TARGET.
+archs = ["arm64"]
+skip = "cp310-*"
