@@ -67,19 +67,13 @@ jobs:
           name: sdist
           path: dist/
 
-  publish:
-    name: Publish to PyPI
+  collect_artifacts:
+    name: Collect all wheels and sdist into one artifact
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
-    environment:
-      name: pypi
-      url: https://pypi.org/p/yet-another-onnxruntime-extensions
-    permissions:
-      id-token: write
 
     steps:
-      - name: Download wheel artifacts
+      - name: Download all wheel artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
@@ -90,6 +84,30 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: sdist
+          path: dist/
+
+      - name: Upload combined dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: [collect_artifacts]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/yet-another-onnxruntime-extensions
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
           path: dist/
 
       - name: Publish to PyPI
