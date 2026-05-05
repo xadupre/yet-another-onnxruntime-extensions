@@ -7,7 +7,7 @@
 
 #include "yaourt_helpers.h"
 
-#ifdef CUDA_VERSION
+#ifdef __CUDACC__
 #include <cuda_fp16.h>
 #endif
 
@@ -45,7 +45,7 @@ template <> struct CTypeToOnnxType<double> {
   }
 };
 
-#if defined(CUDA_VERSION)
+#if defined(__CUDACC__)
 template <> struct CTypeToOnnxType<half> {
   inline ONNXTensorElementDataType onnx_type() const {
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16;
