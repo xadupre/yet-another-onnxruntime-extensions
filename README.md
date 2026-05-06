@@ -26,8 +26,7 @@ profiling utilities, and plotting helpers.
 
 - **Custom C++ operators** (`yaourt.ortops`) — sparse CPU operators ship as
   pre-built binaries inside the wheel; fused-kernel CUDA operators require a
-  CUDA-enabled CMake build (see the
-  [Getting Started guide](https://xadupre.github.io/yet-another-onnxruntime-extensions/getting_started.html)).
+  CUDA-enabled CMake build (see [docs/getting_started.rst](docs/getting_started.rst)).
   Both are registered directly with ONNX Runtime.
 - **Profiling tools** (`yaourt.tools`) — parse ONNX Runtime JSON profiling files
   into pandas DataFrames and visualize execution timelines and per-operator
@@ -43,6 +42,17 @@ profiling utilities, and plotting helpers.
 ```bash
 pip install yet-another-onnxruntime-extensions
 ```
+
+> **Note:** The pre-built wheel includes sparse CPU operators only.
+> Fused-kernel CUDA operators must be compiled from source.
+> With the CUDA toolkit installed, run:
+>
+> ```bash
+> cmake -S cmake -B build -DCMAKE_BUILD_TYPE=Release
+> cmake --build build --config Release
+> ```
+>
+> See [docs/getting_started.rst](docs/getting_started.rst) for full build instructions.
 
 Verify the installation:
 
