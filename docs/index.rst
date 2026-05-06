@@ -39,7 +39,75 @@ yet-another-onnxruntime-extensions
 .. image:: https://img.shields.io/github/repo-size/xadupre/yet-another-onnxruntime-extensions
     :target: https://github.com/xadupre/yet-another-onnxruntime-extensions
 
-Experimental onnxruntime extensions.
+**yet-another-onnxruntime-extensions** (``yaourt``) is an experimental library
+of `ONNX Runtime <https://onnxruntime.ai/>`_ extensions: custom C++ operators,
+profiling utilities, and plotting helpers.
+
+Installation
+------------
+
+.. code-block:: bash
+
+    pip install yet-another-onnxruntime-extensions
+
+.. code-block:: python
+
+    import yaourt
+    print(yaourt.__version__)
+
+Key Features
+------------
+
+:mod:`yaourt.ortops` — Custom C++ Operators
+    Sparse and fused-kernel operators compiled as shared libraries and
+    registered with ONNX Runtime via
+    :data:`~yaourt.ortops.SPARSE_CPU_LIB_PATH` or
+    :data:`~yaourt.ortops.FUSED_KERNEL_CUDA_LIB_PATH`.
+
+:mod:`yaourt.tools` — Profiling Tools
+    Parse ONNX Runtime JSON profiling output into ``pandas`` DataFrames
+    (:func:`~yaourt.tools.js_profile.js_profile_to_dataframe`) and visualize
+    per-operator timings and execution timelines with matplotlib
+    (:func:`~yaourt.tools.js_profile.plot_ort_profile`,
+    :func:`~yaourt.tools.js_profile.plot_ort_profile_timeline`).
+
+:mod:`yaourt.plot` — Benchmark and Plot Helpers
+    Horizontal benchmark comparison histograms with error bars
+    (:func:`~yaourt.plot.benchmark.hhistograms`) and tensor histogram
+    utilities for model analysis (:func:`~yaourt.doc.plot_histogram`).
+
+:mod:`yaourt.reference` — Reference Evaluator
+    A pure-Python ONNX evaluator useful for testing and debugging custom
+    operators without a full ONNX Runtime build.
+
+Quick Start
+-----------
+
+Run inference with ONNX Runtime:
+
+.. code-block:: python
+
+    import numpy as np
+    import onnxruntime
+    from yaourt.doc import demo_mlp_model
+
+    model = demo_mlp_model("")  # filename argument is unused
+    sess = onnxruntime.InferenceSession(
+        model.SerializeToString(), providers=["CPUExecutionProvider"]
+    )
+    x = np.random.randn(3, 10).astype(np.float32)
+    (output,) = sess.run(None, {"x": x})
+    print("Output shape:", output.shape)
+
+Load the custom C++ operators:
+
+.. code-block:: python
+
+    import onnxruntime as ort
+    from yaourt.ortops import SPARSE_CPU_LIB_PATH
+
+    opts = ort.SessionOptions()
+    opts.register_custom_ops_library(str(SPARSE_CPU_LIB_PATH))
 
 .. toctree::
     :maxdepth: 1
