@@ -24,8 +24,11 @@ profiling utilities, and plotting helpers.
 
 ## Features
 
-- **Custom C++ operators** (`yaourt.ortops`) — sparse and fused-kernel operators
-  compiled as shared libraries and registered directly with ONNX Runtime.
+- **Custom C++ operators** (`yaourt.ortops`) — sparse CPU operators ship as
+  pre-built binaries inside the wheel; fused-kernel CUDA operators require a
+  CUDA-enabled CMake build (see the
+  [Getting Started guide](https://xadupre.github.io/yet-another-onnxruntime-extensions/getting_started.html)).
+  Both are registered directly with ONNX Runtime.
 - **Profiling tools** (`yaourt.tools`) — parse ONNX Runtime JSON profiling files
   into pandas DataFrames and visualize execution timelines and per-operator
   breakdowns with matplotlib.
