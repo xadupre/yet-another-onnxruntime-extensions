@@ -27,7 +27,6 @@ else:
     _LIB_NAME = "libortops_fused_kernel_cuda.so"
 _LIB_PATH = os.path.join(_REPO_ROOT, "yaourt", "ortops", "fused_kernel", "cuda", _LIB_NAME)
 _OP_DOMAIN = "yaourt.ortops.fused_kernel.cuda"
-_CONTRIB_DOMAIN = "com.microsoft"
 
 
 def _lib_available() -> bool:
@@ -677,10 +676,10 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
         X = oh.make_tensor_value_info("X", onnx.TensorProto.FLOAT, list(shape))
         Y = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
         relu_node = oh.make_node("Relu", inputs=["X"], outputs=["Z"])
-        gelu_node = oh.make_node("Gelu", inputs=["Z"], outputs=["Y"], domain=_CONTRIB_DOMAIN)
+        gelu_node = oh.make_node("Gelu", inputs=["Z"], outputs=["Y"], domain="com.microsoft")
         graph = oh.make_graph([relu_node, gelu_node], "ReluGeluGraph", [X], [Y])
         model = oh.make_model(
-            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_CONTRIB_DOMAIN, 1)]
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid("com.microsoft", 1)]
         )
         model.ir_version = 8
         return model.SerializeToString()
@@ -694,10 +693,10 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
         Y_in = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
         Out = oh.make_tensor_value_info("Out", onnx.TensorProto.FLOAT, list(shape))
         add_node = oh.make_node("Add", inputs=["X", "Y"], outputs=["Z"])
-        gelu_node = oh.make_node("Gelu", inputs=["Z"], outputs=["Out"], domain=_CONTRIB_DOMAIN)
+        gelu_node = oh.make_node("Gelu", inputs=["Z"], outputs=["Out"], domain="com.microsoft")
         graph = oh.make_graph([add_node, gelu_node], "AddGeluGraph", [X, Y_in], [Out])
         model = oh.make_model(
-            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_CONTRIB_DOMAIN, 1)]
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid("com.microsoft", 1)]
         )
         model.ir_version = 8
         return model.SerializeToString()
@@ -709,11 +708,11 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
 
         X = oh.make_tensor_value_info("X", onnx.TensorProto.FLOAT, list(shape))
         Y = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
-        gelu_node = oh.make_node("Gelu", inputs=["X"], outputs=["Z"], domain=_CONTRIB_DOMAIN)
+        gelu_node = oh.make_node("Gelu", inputs=["X"], outputs=["Z"], domain="com.microsoft")
         mul_node = oh.make_node("Mul", inputs=["Z", "X"], outputs=["Y"])
         graph = oh.make_graph([gelu_node, mul_node], "GeluMulGraph", [X], [Y])
         model = oh.make_model(
-            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_CONTRIB_DOMAIN, 1)]
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid("com.microsoft", 1)]
         )
         model.ir_version = 8
         return model.SerializeToString()
@@ -728,11 +727,11 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
         Out = oh.make_tensor_value_info("Out", onnx.TensorProto.FLOAT, list(shape))
         add_node = oh.make_node("Add", inputs=["X", "bias"], outputs=["Z"])
         fast_gelu_node = oh.make_node(
-            "FastGelu", inputs=["Z"], outputs=["Out"], domain=_CONTRIB_DOMAIN
+            "FastGelu", inputs=["Z"], outputs=["Out"], domain="com.microsoft"
         )
         graph = oh.make_graph([add_node, fast_gelu_node], "AddFastGeluGraph", [X, bias], [Out])
         model = oh.make_model(
-            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_CONTRIB_DOMAIN, 1)]
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid("com.microsoft", 1)]
         )
         model.ir_version = 8
         return model.SerializeToString()
