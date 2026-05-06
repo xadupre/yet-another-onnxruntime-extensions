@@ -128,7 +128,7 @@ the ``ORT_VERSION`` CMake variable:
 
     cmake -S cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
-          -DORT_VERSION=/path/to/onnxruntime/build/Linux/RelWithDebInfo
+          -DORT_VERSION=/path/to/onnxruntime/build/Linux/Release
     cmake --build build --config Release
 
 CMake recognises that ``ORT_VERSION`` is a filesystem path rather than a
@@ -144,7 +144,7 @@ The same option is available when building through ``setup.py`` by setting the
 
 .. code-block:: bash
 
-    ORT_VERSION=/path/to/onnxruntime/build/Linux/RelWithDebInfo \
+    ORT_VERSION=/path/to/onnxruntime/build/Linux/Release \
         python setup.py build_ext --inplace
 
 On Windows use ``set`` instead:
