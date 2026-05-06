@@ -11,20 +11,42 @@ if(NOT ORT_VERSION)
 endif()
 
 include(FetchContent)
+include(CheckLanguage)
+
+# Detect CUDA availability and version for GPU package selection
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER)
+  execute_process(
+    COMMAND ${CMAKE_CUDA_COMPILER} --version
+    OUTPUT_VARIABLE _CUDA_VERSION_OUTPUT
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REGEX MATCH "release ([0-9]+)\\.[0-9]+" _CUDA_VERSION_MATCH "${_CUDA_VERSION_OUTPUT}")
+  set(_CUDA_MAJOR_VERSION ${CMAKE_MATCH_1})
+  if(_CUDA_MAJOR_VERSION)
+    message(STATUS "ORT - CUDA detected (version ${_CUDA_MAJOR_VERSION}), using GPU package")
+  else()
+    message(STATUS "ORT - CUDA detected, using GPU package (CUDA version not parsed from nvcc output)")
+  endif()
+  set(ORT_CUDA_SUFFIX "-gpu")
+else()
+  set(ORT_CUDA_SUFFIX "")
+  message(STATUS "ORT - no CUDA detected, using CPU package")
+endif()
 
 string(LENGTH "${ORT_VERSION}" ORT_VERSION_LENGTH)
 
 if(ORT_VERSION_LENGTH LESS_EQUAL 12)
   message(STATUS "ORT - retrieve release version ${ORT_VERSION}")
   if(MSVC)
-    set(ORT_NAME "onnxruntime-win-x64-${ORT_VERSION}.zip")
-    set(ORT_FOLD "onnxruntime-win-x64-${ORT_VERSION}")
+    set(ORT_NAME "onnxruntime-win-x64${ORT_CUDA_SUFFIX}-${ORT_VERSION}.zip")
+    set(ORT_FOLD "onnxruntime-win-x64${ORT_CUDA_SUFFIX}-${ORT_VERSION}")
   elseif(APPLE)
     set(ORT_NAME "onnxruntime-osx-arm64-${ORT_VERSION}.tgz")
     set(ORT_FOLD "onnxruntime-osx-arm64-${ORT_VERSION}")
   else()
-    set(ORT_NAME "onnxruntime-linux-x64-${ORT_VERSION}.tgz")
-    set(ORT_FOLD "onnxruntime-linux-x64-${ORT_VERSION}")
+    set(ORT_NAME "onnxruntime-linux-x64${ORT_CUDA_SUFFIX}-${ORT_VERSION}.tgz")
+    set(ORT_FOLD "onnxruntime-linux-x64${ORT_CUDA_SUFFIX}-${ORT_VERSION}")
   endif()
   set(ORT_ROOT "https://github.com/microsoft/onnxruntime/releases/download/")
   set(ORT_URL "${ORT_ROOT}v${ORT_VERSION}/${ORT_NAME}")
