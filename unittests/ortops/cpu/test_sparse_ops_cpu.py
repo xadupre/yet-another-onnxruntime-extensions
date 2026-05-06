@@ -15,7 +15,9 @@ import numpy
 from yaourt.ext_test_case import ExtTestCase, requires_onnxruntime
 
 # Path to the shared library produced by the cmake build.
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_REPO_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
     _LIB_NAME = "ortops_sparse_cpu.dll"
