@@ -15,8 +15,3 @@ target_include_directories(
   "${ROOT_INCLUDE_PATH}"
   "${ORTOPS_INCLUDE_DIR}"
   "${ONNXRUNTIME_INCLUDE_DIR}")
-
-target_link_libraries(
-  ortops_sparse_cpu
-  PRIVATE
-  common)

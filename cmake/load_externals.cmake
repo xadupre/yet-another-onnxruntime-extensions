@@ -93,6 +93,7 @@ function(ort_add_custom_op name provider folder)
   set_property(TARGET ${name} PROPERTY POSITION_INDEPENDENT_CODE ON)
   set_target_properties(${name} PROPERTIES CXX_VISIBILITY_PRESET hidden)
   set_target_properties(${name} PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
+  target_link_libraries(${name} PRIVATE common)
   add_custom_command(
     TARGET ${name} POST_BUILD
     COMMAND ${CMAKE_COMMAND} ARGS -E copy
