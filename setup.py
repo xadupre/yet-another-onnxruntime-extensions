@@ -11,6 +11,14 @@ CUDA it falls back to the plain ``yet-another-onnxruntime-extensions`` name.
 
 from __future__ import annotations
 
+import warnings
+
+# Suppress deprecation warnings emitted by pytest-runner (the `ptr` package)
+# when setuptools >= 77 loads all installed distutils command entry-points
+# during setup().  These originate in a third-party package and cannot be
+# fixed here; they will disappear once pytest-runner is updated or uninstalled.
+warnings.filterwarnings("ignore", module=r"ptr(\..+)?$")
+
 import shutil
 import subprocess
 from pathlib import Path
