@@ -45,16 +45,11 @@ _DOMAIN_PREFIX = "yaourt.ortops."
 # Registry mapping subfolder (relative to yaourt/ortops/) to its known library
 # Path constants.  Using named constants keeps the mapping explicit and avoids
 # scanning arbitrary directories.
-_KNOWN_LIBS: dict[str, list[Path]] = {}  # filled in after constants are defined
-
-
-def _init_known_libs() -> None:
-    _KNOWN_LIBS["sparse/cpu_v1"] = [SPARSE_CPU_LIB_PATH]
-    _KNOWN_LIBS["sparse/cpu"] = [SPARSE_CPU2_LIB_PATH]
-    _KNOWN_LIBS["fused_kernel/cuda"] = [FUSED_KERNEL_CUDA_LIB_PATH]
-
-
-_init_known_libs()
+_KNOWN_LIBS: dict[str, list[Path]] = {
+    "sparse/cpu_v1": [SPARSE_CPU_LIB_PATH],
+    "sparse/cpu": [SPARSE_CPU2_LIB_PATH],
+    "fused_kernel/cuda": [FUSED_KERNEL_CUDA_LIB_PATH],
+}
 
 
 def get_ort_ext_libs(
