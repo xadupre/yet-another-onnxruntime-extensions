@@ -11,6 +11,17 @@ from yaourt.reference import ExtendedReferenceEvaluator
 TFLOAT = onnx.TensorProto.FLOAT
 
 
+def _make_add_function() -> onnx.FunctionProto:
+    return oh.make_function(
+        domain="test.fn",
+        fname="MyAdd",
+        inputs=["X", "Y"],
+        outputs=["Z"],
+        nodes=[oh.make_node("Add", ["X", "Y"], ["Z"])],
+        opset_imports=[oh.make_opsetid("", 18)],
+    )
+
+
 def _make_add_model() -> onnx.ModelProto:
     return oh.make_model(
         oh.make_graph(
@@ -115,6 +126,42 @@ class TestExtendedReferenceEvaluator(ExtTestCase):
         x = np.ones((2, 2), dtype=np.float32)
         (result,) = ref.run(None, {"X": x, "Y": x})
         self.assertEqualArray(x + x, result)
+
+    def test_run_function_proto(self):
+        fn = _make_add_function()
+        ref = ExtendedReferenceEvaluator(fn)
+        x = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
+        (result,) = ref.run(None, {"X": x, "Y": x})
+        self.assertEqualArray(x + x, result)
+
+    def test_run_function_proto_list_inputs(self):
+        fn = _make_add_function()
+        ref = ExtendedReferenceEvaluator(fn)
+        x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        (result,) = ref.run([x, x])
+        self.assertEqualArray(x + x, result)
+
+    def test_run_function_proto_intermediate(self):
+        fn = oh.make_function(
+            domain="test.fn",
+            fname="AddMul",
+            inputs=["X", "Y"],
+            outputs=["Z"],
+            nodes=[
+                oh.make_node("Add", ["X", "Y"], ["tmp"]),
+                oh.make_node("Mul", ["tmp", "X"], ["Z"]),
+            ],
+            opset_imports=[oh.make_opsetid("", 18)],
+        )
+        ref = ExtendedReferenceEvaluator(fn)
+        x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        y = np.array([4.0, 5.0, 6.0], dtype=np.float32)
+        inter = ref._run_function(None, {"X": x, "Y": y}, intermediate=True)
+        self.assertIsInstance(inter, dict)
+        self.assertIn("tmp", inter)
+        self.assertIn("Z", inter)
+        self.assertEqualArray(x + y, inter["tmp"])
+        self.assertEqualArray((x + y) * x, inter["Z"])
 
 
 if __name__ == "__main__":
