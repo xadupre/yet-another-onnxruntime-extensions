@@ -23,12 +23,23 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
     """
 
     def _make_inference_session(self, model_bytes: bytes):
-        """Creates an InferenceSession targeting the CUDA execution provider."""
+        """Creates an InferenceSession targeting the CUDA execution provider.
+
+        Raises:
+            AssertionError: If ORT falls back to CPU and does not use
+                ``CUDAExecutionProvider``.
+        """
         import onnxruntime as ort
 
-        return ort.InferenceSession(
+        sess = ort.InferenceSession(
             model_bytes, providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
         )
+        self.assertIn(
+            "CUDAExecutionProvider",
+            sess.get_providers(),
+            "ORT fell back to CPU-only execution; CUDAExecutionProvider is not active.",
+        )
+        return sess
 
     @staticmethod
     def _gelu_ref(x: numpy.ndarray) -> numpy.ndarray:
