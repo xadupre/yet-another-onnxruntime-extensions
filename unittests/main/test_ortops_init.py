@@ -2,7 +2,6 @@
 
 import os
 import platform
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -90,62 +89,42 @@ class TestGetOrtExtLibsErrors(ExtTestCase):
         with self.assertRaises(ValueError):
             get_ort_ext_libs("CPUExecutionProvider", domain="other.domain.sparse.cpu")
 
-    def test_raises_file_not_found_for_nonexistent_subfolder(self):
+    def test_raises_key_error_for_unregistered_subfolder(self):
         from yaourt.ortops import get_ort_ext_libs
 
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(KeyError):
             get_ort_ext_libs("CPUExecutionProvider", subfolder="nonexistent/path")
 
-    def test_raises_file_not_found_for_nonexistent_domain(self):
+    def test_raises_key_error_for_unregistered_domain(self):
         from yaourt.ortops import get_ort_ext_libs
 
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(KeyError):
             get_ort_ext_libs("CPUExecutionProvider", domain="yaourt.ortops.nonexistent.path")
 
 
 class TestGetOrtExtLibsHappyPath(ExtTestCase):
-    """Tests for get_ort_ext_libs with real and synthetic directories."""
-
-    def _make_fake_lib_dir(self, names):
-        """Creates a temporary directory containing fake library files."""
-        tmp = tempfile.mkdtemp()
-        for name in names:
-            Path(tmp, name).write_bytes(b"")
-        return tmp
+    """Tests for get_ort_ext_libs with registered subfolders."""
 
     def test_returns_list_of_paths(self):
         from yaourt.ortops import get_ort_ext_libs
 
-        lib_name = f"libfake{_LIB_EXT}"
-        tmp = self._make_fake_lib_dir([lib_name, "not_a_lib.txt"])
-        try:
-            # Computing a relative path from the _HERE anchor is not easy, so we
-            # call get_ort_ext_libs via its domain/subfolder logic by pointing
-            # at a folder under yaourt/ortops that always exists (sparse).
-            results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse")
-            self.assertIsInstance(results, list)
-            for p in results:
-                self.assertIsInstance(p, Path)
-        finally:
-            import shutil
+        results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse/cpu")
+        self.assertIsInstance(results, list)
+        for p in results:
+            self.assertIsInstance(p, Path)
 
-            shutil.rmtree(tmp, ignore_errors=True)
-
-    def test_only_lib_files_returned(self):
-        """Non-library files in the directory must not appear in results."""
+    def test_only_existing_lib_files_returned(self):
+        """All returned paths must exist on disk."""
         from yaourt.ortops import get_ort_ext_libs
 
-        # sparse/ exists and contains subdirectories (cpu, cpu_v1) but no
-        # top-level shared libraries — result should be an empty list.
-        results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse")
+        results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse/cpu")
         for p in results:
-            self.assertIn(p.suffix, {".so", ".dll", ".dylib"})
+            self.assertTrue(p.exists(), msg=f"Returned non-existent path: {p}")
 
     def test_domain_derives_subfolder_sparse_cpu(self):
-        """Domain 'yaourt.ortops.sparse.cpu' must resolve to the sparse/cpu dir."""
+        """Domain 'yaourt.ortops.sparse.cpu' must resolve to the sparse/cpu entry."""
         from yaourt.ortops import get_ort_ext_libs
 
-        # sparse/cpu always exists (it contains C++ source files).
         results = get_ort_ext_libs("CPUExecutionProvider", domain="yaourt.ortops.sparse.cpu")
         self.assertIsInstance(results, list)
 
@@ -162,7 +141,7 @@ class TestGetOrtExtLibsHappyPath(ExtTestCase):
         """Returned paths must be in sorted order."""
         from yaourt.ortops import get_ort_ext_libs
 
-        results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse")
+        results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse/cpu")
         self.assertEqual(results, sorted(results))
 
     def test_subfolder_sparse_cpu_returns_paths_pointing_into_cpu(self):
@@ -171,6 +150,27 @@ class TestGetOrtExtLibsHappyPath(ExtTestCase):
         results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse/cpu")
         for p in results:
             self.assertIn("cpu", p.parts)
+
+    def test_known_libs_registry_contains_expected_subfolders(self):
+        """The internal registry must list all three known subfolders."""
+        from yaourt.ortops import _KNOWN_LIBS
+
+        self.assertIn("sparse/cpu_v1", _KNOWN_LIBS)
+        self.assertIn("sparse/cpu", _KNOWN_LIBS)
+        self.assertIn("fused_kernel/cuda", _KNOWN_LIBS)
+
+    def test_known_libs_values_are_named_constants(self):
+        """Registry values must reference the exported Path constants."""
+        from yaourt.ortops import (
+            FUSED_KERNEL_CUDA_LIB_PATH,
+            SPARSE_CPU2_LIB_PATH,
+            SPARSE_CPU_LIB_PATH,
+            _KNOWN_LIBS,
+        )
+
+        self.assertIn(SPARSE_CPU_LIB_PATH, _KNOWN_LIBS["sparse/cpu_v1"])
+        self.assertIn(SPARSE_CPU2_LIB_PATH, _KNOWN_LIBS["sparse/cpu"])
+        self.assertIn(FUSED_KERNEL_CUDA_LIB_PATH, _KNOWN_LIBS["fused_kernel/cuda"])
 
 
 class TestGetOrtExtLibsWithCompiledLib(ExtTestCase):
