@@ -50,6 +50,12 @@ Installation
 
     pip install yet-another-onnxruntime-extensions
 
+.. note::
+
+    The pre-built wheel includes sparse CPU operators only.
+    Fused-kernel CUDA operators must be compiled from source with a
+    CUDA-enabled CMake build — see :doc:`getting_started` for instructions.
+
 .. code-block:: python
 
     import yaourt
