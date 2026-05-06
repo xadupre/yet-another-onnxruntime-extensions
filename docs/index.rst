@@ -42,6 +42,8 @@ yet-another-onnxruntime-extensions
 **yet-another-onnxruntime-extensions** (``yaourt``) is an experimental library
 of `ONNX Runtime <https://onnxruntime.ai/>`_ extensions: custom C++ operators,
 profiling utilities, and plotting helpers.
+The source code is available on
+`GitHub <https://github.com/xadupre/yet-another-onnxruntime-extensions>`_.
 
 Installation
 ------------
