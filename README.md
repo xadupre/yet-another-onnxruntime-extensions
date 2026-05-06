@@ -44,12 +44,11 @@ pip install yet-another-onnxruntime-extensions
 ```
 
 > **Note:** The pre-built wheel includes sparse CPU operators only.
-> Fused-kernel CUDA operators must be compiled from source.
-> With the CUDA toolkit installed, run:
+> To get fused-kernel CUDA operators, install from source with the CUDA
+> toolkit (including `nvcc`) available on your `PATH`:
 >
 > ```bash
-> cmake -S cmake -B build -DCMAKE_BUILD_TYPE=Release
-> cmake --build build --config Release
+> pip install yet-another-onnxruntime-extensions-cuda
 > ```
 >
 > See [docs/getting_started.rst](docs/getting_started.rst) for full build instructions.
