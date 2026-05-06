@@ -19,6 +19,7 @@ import warnings
 # fixed here; they will disappear once pytest-runner is updated or uninstalled.
 warnings.filterwarnings("ignore", module=r"ptr(\..+)?$")
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -73,6 +74,12 @@ def _run_cmake() -> None:
 
     build_dir = _HERE / "build"
     configure_cmd = [cmake, f"-S{cmake_src}", f"-B{build_dir}", "-DCMAKE_BUILD_TYPE=Release"]
+
+    ort_version = os.environ.get("ORT_VERSION")
+    if ort_version:
+        configure_cmd.append(f"-DORT_VERSION={ort_version}")
+        print(f"yaourt: using local ONNX Runtime from {ort_version}", flush=True)
+
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 
     print("yaourt: cmake configure ...", flush=True)
