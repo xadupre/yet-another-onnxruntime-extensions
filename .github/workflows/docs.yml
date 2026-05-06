@@ -7,12 +7,16 @@ on:
       - "docs/**"
       - "**.md"
       - "**.rst"
+      - "**.h"
+      - "**.hpp"
   pull_request:
     branches: ["main"]
     paths:
       - "docs/**"
       - "**.md"
       - "**.rst"
+      - "**.h"
+      - "**.hpp"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,6 +34,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install system dependencies
+        run: sudo apt-get install -y doxygen
       - name: Install dependencies
         run: pip install -e ".[docs]"
       - name: pip freeze

@@ -1,11 +1,35 @@
+import logging
+import subprocess
 import sys
+from pathlib import Path
+
 import yaourt
 
 project = "yet-another-onnxruntime-extensions"
 author = "yet-another-onnxruntime-extensions contributors"
 release = yaourt.__version__
 
+_logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Run Doxygen to generate the XML consumed by Breathe.
+# The Doxyfile lives next to this conf.py.  A missing doxygen executable is
+# treated as a soft failure so that the rest of the Sphinx build can still
+# proceed.
+# ---------------------------------------------------------------------------
+_docs_dir = Path(__file__).parent
+_doxygen_result = subprocess.run(
+    ["doxygen", "Doxyfile"], cwd=str(_docs_dir), check=False, capture_output=True, text=True
+)
+if _doxygen_result.returncode != 0:
+    _logger.warning(
+        "Doxygen exited with code %d; C++ API docs may be incomplete.\n%s",
+        _doxygen_result.returncode,
+        _doxygen_result.stderr or _doxygen_result.stdout,
+    )
+
 extensions = [
+    "breathe",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.duration",
@@ -20,6 +44,9 @@ extensions = [
     "sphinx_runpython.runpython",
     "matplotlib.sphinxext.plot_directive",
 ]
+
+breathe_projects = {"yaourt": str(_docs_dir / "_doxygen" / "xml")}
+breathe_default_project = "yaourt"
 
 sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_examples"]}
 

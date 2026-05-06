@@ -10,3 +10,4 @@ API Reference
     tools/index
     ortops/index
     reference/index
+    cpp/index

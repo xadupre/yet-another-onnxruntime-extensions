@@ -72,6 +72,7 @@ instance/
 docs/build/
 docs/auto_examples/
 docs/sg_execution_times.rst
+docs/_doxygen/
 
 # PyBuilder
 .pybuilder/
