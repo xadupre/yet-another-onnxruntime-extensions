@@ -59,10 +59,12 @@ Key Features
 ------------
 
 :mod:`yaourt.ortops` — Custom C++ Operators
-    Sparse and fused-kernel operators compiled as shared libraries and
-    registered with ONNX Runtime via
-    :data:`~yaourt.ortops.SPARSE_CPU_LIB_PATH` or
-    :data:`~yaourt.ortops.FUSED_KERNEL_CUDA_LIB_PATH`.
+    Sparse CPU operators are shipped as pre-built binaries inside the wheel
+    and registered with ONNX Runtime via
+    :data:`~yaourt.ortops.SPARSE_CPU_LIB_PATH`.
+    Fused-kernel CUDA operators (:data:`~yaourt.ortops.FUSED_KERNEL_CUDA_LIB_PATH`)
+    require a CUDA-enabled build — see :doc:`getting_started` for CMake
+    build instructions.
 
 :mod:`yaourt.tools` — Profiling Tools
     Parse ONNX Runtime JSON profiling output into ``pandas`` DataFrames
