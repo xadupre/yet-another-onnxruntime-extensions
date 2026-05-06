@@ -58,7 +58,9 @@ def get_ort_ext_libs(
     separators (e.g. ``"yaourt.ortops.sparse.cpu"`` → ``"sparse/cpu"``).
 
     :param ep: execution provider string (e.g. ``"CPUExecutionProvider"`` or
-        ``"CUDAExecutionProvider"``).
+        ``"CUDAExecutionProvider"``).  Accepted as part of the public API for
+        forward-compatibility; callers should always pass the intended provider
+        so that future versions can use it to validate or filter results.
     :param subfolder: path to the subdirectory under ``yaourt/ortops/`` that
         contains the library, e.g. ``"sparse/cpu"``.
     :param domain: ONNX domain string whose prefix encodes the subfolder,

@@ -119,7 +119,7 @@ class TestGetOrtExtLibsHappyPath(ExtTestCase):
         lib_name = f"libfake{_LIB_EXT}"
         tmp = self._make_fake_lib_dir([lib_name, "not_a_lib.txt"])
         try:
-            # Compute a relative path from the _HERE anchor isn't easy, so we
+            # Computing a relative path from the _HERE anchor is not easy, so we
             # call get_ort_ext_libs via its domain/subfolder logic by pointing
             # at a folder under yaourt/ortops that always exists (sparse).
             results = get_ort_ext_libs("CPUExecutionProvider", subfolder="sparse")
