@@ -109,6 +109,7 @@ select = [
 "*/__init__.py" = ["F401"]
 "docs/**" = ["B018", "E402", "RUF001", "SIM105"]
 "unittests/**" = ["B023", "B904", "E731", "SIM300"]
+"setup.py" = ["E402"]
 
 [tool.mypy]
 ignore_missing_imports = true

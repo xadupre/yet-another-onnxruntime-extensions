@@ -226,7 +226,7 @@ def measure_time(
 
         from pprint import pprint
         from math import cos
-        from yobx.ext_test_case import measure_time
+        from yaourt.ext_test_case import measure_time
 
         res = measure_time(lambda: cos(0.5))
         pprint(res)
@@ -333,7 +333,7 @@ def statistics_on_folder(
 
         import os
         import pprint
-        from yobx.ext_test_case import statistics_on_folder, __file__
+        from yaourt.ext_test_case import statistics_on_folder, __file__
 
         pprint.pprint(statistics_on_folder(os.path.dirname(__file__)))
 
@@ -345,7 +345,7 @@ def statistics_on_folder(
 
         import os
         import pprint
-        from yobx.ext_test_case import statistics_on_folder, __file__
+        from yaourt.ext_test_case import statistics_on_folder, __file__
 
         pprint.pprint(statistics_on_folder(os.path.dirname(__file__), aggregation=1))
     """
@@ -1237,7 +1237,7 @@ def statistics_on_file(filename: str) -> Dict[str, Union[int, float, str]]:
         :showcode:
 
         import pprint
-        from yobx.ext_test_case import statistics_on_file, __file__
+        from yaourt.ext_test_case import statistics_on_file, __file__
 
         pprint.pprint(statistics_on_file(__file__))
     """
@@ -1312,15 +1312,15 @@ class ExtTestCase(unittest.TestCase):
 
     def print_model(self, model: "ModelProto"):  # noqa: F821
         "Prints a ModelProto"
-        from yobx.helpers.onnx_helper import pretty_onnx
+        import onnx.printer
 
-        print(pretty_onnx(model))
+        print(onnx.printer.to_text(model))
 
     def print_onnx(self, model: "ModelProto"):  # noqa: F821
         "Prints a ModelProto"
-        from yobx.helpers.onnx_helper import pretty_onnx
+        import onnx.printer
 
-        print(pretty_onnx(model))
+        print(onnx.printer.to_text(model))
 
     def get_dump_file(self, name: str, folder: Optional[str] = None) -> str:
         """Returns a filename to dump a model."""
