@@ -621,5 +621,168 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         numpy.testing.assert_array_equal(y, expected)
 
 
+@unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
+@requires_cuda_onnxruntime()
+@requires_onnxruntime("1.18")
+class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
+    """Tests that combine standard ONNX ops with custom CUDA contrib ops in one graph."""
+
+    def _make_inference_session(self, model_bytes: bytes):
+        """Creates an OrtInferenceSession with the custom op library loaded (CUDA EP)."""
+        import onnxruntime as ort
+
+        so = ort.SessionOptions()
+        so.register_custom_ops_library(_LIB_PATH)
+        return ort.InferenceSession(
+            model_bytes,
+            sess_options=so,
+            providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+
+    def _make_relu_then_neg_xplus1_model(self, shape) -> bytes:
+        """Builds a model: X -> Relu -> Z -> NegXplus1 -> Y.
+
+        Combines a standard ONNX ``Relu`` op with the custom ``NegXplus1``
+        contrib op so that both execute together under the CUDA EP.
+        """
+        import onnx
+        import onnx.helper as oh
+
+        X = oh.make_tensor_value_info("X", onnx.TensorProto.FLOAT, list(shape))
+        Y = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
+        relu_node = oh.make_node("Relu", inputs=["X"], outputs=["Z"])
+        neg_node = oh.make_node("NegXplus1", inputs=["Z"], outputs=["Y"], domain=_OP_DOMAIN)
+        graph = oh.make_graph([relu_node, neg_node], "ReluNegXplus1Graph", [X], [Y])
+        model = oh.make_model(
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_OP_DOMAIN, 1)]
+        )
+        model.ir_version = 8
+        return model.SerializeToString()
+
+    def _make_add_then_mul_sigmoid_model(self, shape) -> bytes:
+        """Builds a model: (X, Y) -> Add -> Z -> MulSigmoid -> Out.
+
+        Combines the standard ONNX ``Add`` op with the custom ``MulSigmoid``
+        contrib op (Swish-like activation) in a single CUDA graph.
+        """
+        import onnx
+        import onnx.helper as oh
+
+        X = oh.make_tensor_value_info("X", onnx.TensorProto.FLOAT, list(shape))
+        Y_in = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
+        Out = oh.make_tensor_value_info("Out", onnx.TensorProto.FLOAT, list(shape))
+        add_node = oh.make_node("Add", inputs=["X", "Y"], outputs=["Z"])
+        swish_node = oh.make_node("MulSigmoid", inputs=["Z"], outputs=["Out"], domain=_OP_DOMAIN)
+        graph = oh.make_graph([add_node, swish_node], "AddMulSigmoidGraph", [X, Y_in], [Out])
+        model = oh.make_model(
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_OP_DOMAIN, 1)]
+        )
+        model.ir_version = 8
+        return model.SerializeToString()
+
+    def _make_neg_xplus1_then_add_model(self, shape) -> bytes:
+        """Builds a model: X -> NegXplus1 -> Z, then (Z, X) -> Add -> Y.
+
+        Combines the custom ``NegXplus1`` contrib op with the standard ONNX
+        ``Add`` op.  The result should be (1 - X) + X = 1 everywhere.
+        """
+        import onnx
+        import onnx.helper as oh
+
+        X = oh.make_tensor_value_info("X", onnx.TensorProto.FLOAT, list(shape))
+        Y = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, list(shape))
+        neg_node = oh.make_node("NegXplus1", inputs=["X"], outputs=["Z"], domain=_OP_DOMAIN)
+        add_node = oh.make_node("Add", inputs=["Z", "X"], outputs=["Y"])
+        graph = oh.make_graph([neg_node, add_node], "NegXplus1AddGraph", [X], [Y])
+        model = oh.make_model(
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_OP_DOMAIN, 1)]
+        )
+        model.ir_version = 8
+        return model.SerializeToString()
+
+    def _make_mul_then_add_mul_model(self, shape) -> bytes:
+        """Builds a model: (A, B) -> Mul -> P, then (P, B, C) -> AddMul -> Y.
+
+        Combines the standard ONNX ``Mul`` op with the custom three-input
+        ``AddMul`` contrib op, verifying that both execute on the CUDA EP.
+        ``AddMul`` computes ``(P + B) * C``, so the full expression is
+        ``(A * B + B) * C = B * (A + 1) * C``.
+        """
+        import onnx
+        import onnx.helper as oh
+
+        A = oh.make_tensor_value_info("A", onnx.TensorProto.FLOAT, list(shape))
+        B = oh.make_tensor_value_info("B", onnx.TensorProto.FLOAT, list(shape))
+        C = oh.make_tensor_value_info("C", onnx.TensorProto.FLOAT, list(shape))
+        Y = oh.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, None)
+        mul_node = oh.make_node("Mul", inputs=["A", "B"], outputs=["P"])
+        add_mul_node = oh.make_node(
+            "AddMul", inputs=["P", "B", "C"], outputs=["Y"], domain=_OP_DOMAIN
+        )
+        graph = oh.make_graph([mul_node, add_mul_node], "MulAddMulGraph", [A, B, C], [Y])
+        model = oh.make_model(
+            graph, opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_OP_DOMAIN, 1)]
+        )
+        model.ir_version = 8
+        return model.SerializeToString()
+
+    def test_relu_then_neg_xplus1(self):
+        """Standard Relu followed by custom NegXplus1: result is 1 - max(0, x)."""
+        shape = (4, 8)
+        model = self._make_relu_then_neg_xplus1_model(shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(100)
+        x = rng.standard_normal(shape).astype(numpy.float32)
+        (y,) = sess.run(None, {"X": x})
+
+        expected = 1.0 - numpy.maximum(0.0, x)
+        numpy.testing.assert_allclose(y, expected, rtol=1e-5)
+
+    def test_add_then_mul_sigmoid(self):
+        """Standard Add followed by custom MulSigmoid: result is (x+y)*sigmoid(x+y)."""
+        shape = (4, 4)
+        model = self._make_add_then_mul_sigmoid_model(shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(101)
+        x = rng.standard_normal(shape).astype(numpy.float32)
+        y = rng.standard_normal(shape).astype(numpy.float32)
+        (out,) = sess.run(None, {"X": x, "Y": y})
+
+        s = (x + y).astype(numpy.float64)
+        expected = (s * (1.0 / (1.0 + numpy.exp(-s)))).astype(numpy.float32)
+        numpy.testing.assert_allclose(out, expected, rtol=1e-4)
+
+    def test_neg_xplus1_then_add_equals_one(self):
+        """Custom NegXplus1 then standard Add: (1 - x) + x = 1 for all elements."""
+        shape = (3, 5)
+        model = self._make_neg_xplus1_then_add_model(shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(102)
+        x = rng.standard_normal(shape).astype(numpy.float32)
+        (y,) = sess.run(None, {"X": x})
+
+        numpy.testing.assert_allclose(y, numpy.ones(shape, dtype=numpy.float32), rtol=1e-5)
+
+    def test_mul_then_add_mul(self):
+        """Standard Mul then custom AddMul: (A*B + B) * C = B*(A+1)*C."""
+        shape = (4, 4)
+        model = self._make_mul_then_add_mul_model(shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(103)
+        a = rng.standard_normal(shape).astype(numpy.float32)
+        b = rng.standard_normal(shape).astype(numpy.float32)
+        c = rng.standard_normal(shape).astype(numpy.float32)
+        (y,) = sess.run(None, {"A": a, "B": b, "C": c})
+
+        # p = a * b; y = (p + b) * c = b * (a + 1) * c
+        p = a * b
+        expected = (p + b) * c
+        numpy.testing.assert_allclose(y, expected, rtol=1e-5)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
