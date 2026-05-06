@@ -8,10 +8,10 @@ from .doc import CPU_OPS, OrtOpDesc, OrtOpInput, OrtOpOutput, print_cpu_ops
 __all__ = [
     "CPU_OPS",
     "FUSED_KERNEL_CUDA_LIB_PATH",
+    "SPARSE_CPU_LIB_PATH",
     "OrtOpDesc",
     "OrtOpInput",
     "OrtOpOutput",
-    "SPARSE_CPU_LIB_PATH",
     "print_cpu_ops",
 ]
 
@@ -32,6 +32,4 @@ FUSED_KERNEL_CUDA_LIB_PATH: Path = (
     _HERE / "fused_kernel" / "cuda" / f"{_PREFIX}ortops_fused_kernel_cuda{_EXT}"
 )
 
-SPARSE_CPU_LIB_PATH: Path = (
-    _HERE / "sparse" / "cpu_v1" / f"{_PREFIX}ortops_sparse_cpu{_EXT}"
-)
+SPARSE_CPU_LIB_PATH: Path = _HERE / "sparse" / "cpu_v1" / f"{_PREFIX}ortops_sparse_cpu{_EXT}"
