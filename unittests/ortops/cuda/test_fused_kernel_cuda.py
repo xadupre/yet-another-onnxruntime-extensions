@@ -35,7 +35,7 @@ def _lib_available() -> bool:
 @unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
 @requires_cuda_onnxruntime()
 @requires_onnxruntime("1.18")
-class TestCudaCustomOps(ExtTestCase):
+class TestFusedKernelCudaCustomOps(ExtTestCase):
     """Tests for CUDA custom ops (NegXplus1, ReplaceZero, MulSigmoid, etc.)."""
 
     def _make_inference_session(self, model_bytes: bytes):
