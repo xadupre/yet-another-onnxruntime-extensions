@@ -1,0 +1,24 @@
+PROJECT_NAME           = "yet-another-onnxruntime-extensions"
+PROJECT_BRIEF          = "Experimental onnxruntime extensions"
+
+OUTPUT_DIRECTORY       = _doxygen
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+
+INPUT                  = ../yaourt/cpp/include \
+                         ../yaourt/ortops/sparse/cpu/ort_sparse_lite.h
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.hpp
+
+EXTRACT_ALL            = YES
+QUIET                  = YES
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __cplusplus \
+                         ORT_EXPORT= \
+                         ORT_API_CALL= \
+                         ORT_API_MANUAL_INIT

@@ -28,6 +28,7 @@ dev = [
 ]
 docs = [
     "black",
+    "breathe",
     "matplotlib",
     "pandas",
     "pydata-sphinx-theme",
