@@ -127,3 +127,11 @@ Load the custom C++ operators:
     custom_ops/index
     api/index
     auto_examples/index
+
+.. only:: not ci_build
+
+    .. toctree::
+        :maxdepth: 1
+        :caption: Miscellaneous
+
+        ci_durations
