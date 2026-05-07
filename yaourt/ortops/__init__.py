@@ -8,6 +8,7 @@ from pathlib import Path
 from .doc import (
     CPU_OPS,
     CUDA_OPS,
+    FUSED_KERNEL_CPU_OPS,
     OrtOpDesc,
     OrtOpInput,
     OrtOpOutput,
@@ -15,11 +16,15 @@ from .doc import (
     print_cpu_ops_rst,
     print_cuda_ops,
     print_cuda_ops_rst,
+    print_fused_kernel_cpu_ops,
+    print_fused_kernel_cpu_ops_rst,
 )
 
 __all__ = [
     "CPU_OPS",
     "CUDA_OPS",
+    "FUSED_KERNEL_CPU_LIB_PATH",
+    "FUSED_KERNEL_CPU_OPS",
     "FUSED_KERNEL_CUDA_LIB_PATH",
     "SPARSE_CPU2_LIB_PATH",
     "SPARSE_CPU_LIB_PATH",
@@ -31,6 +36,8 @@ __all__ = [
     "print_cpu_ops_rst",
     "print_cuda_ops",
     "print_cuda_ops_rst",
+    "print_fused_kernel_cpu_ops",
+    "print_fused_kernel_cpu_ops_rst",
 ]
 
 _HERE = Path(__file__).parent
@@ -50,6 +57,10 @@ FUSED_KERNEL_CUDA_LIB_PATH: Path = (
     _HERE / "fused_kernel" / "cuda" / f"{_PREFIX}ortops_fused_kernel_cuda{_EXT}"
 )
 
+FUSED_KERNEL_CPU_LIB_PATH: Path = (
+    _HERE / "fused_kernel" / "cpu" / f"{_PREFIX}ortops_fused_kernel_cpu{_EXT}"
+)
+
 SPARSE_CPU_LIB_PATH: Path = _HERE / "sparse" / "cpu_v1" / f"{_PREFIX}ortops_sparse_cpu{_EXT}"
 
 SPARSE_CPU2_LIB_PATH: Path = _HERE / "sparse" / "cpu" / f"{_PREFIX}ortops_sparse_cpu2{_EXT}"
@@ -62,6 +73,7 @@ _DOMAIN_PREFIX = "yaourt.ortops."
 _KNOWN_LIBS: dict[str, list[Path]] = {
     "sparse/cpu_v1": [SPARSE_CPU_LIB_PATH],
     "sparse/cpu": [SPARSE_CPU2_LIB_PATH],
+    "fused_kernel/cpu": [FUSED_KERNEL_CPU_LIB_PATH],
     "fused_kernel/cuda": [FUSED_KERNEL_CUDA_LIB_PATH],
 }
 

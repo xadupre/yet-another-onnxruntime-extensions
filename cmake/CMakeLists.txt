@@ -47,6 +47,7 @@ message(STATUS "ORTOPS_INCLUDE_DIR=${ORTOPS_INCLUDE_DIR}")
 
 include("targets/ortops_sparse_cpu.cmake")
 include("targets/ortops_sparse_cpu2.cmake")
+include("targets/ortops_fused_kernel_cpu.cmake")
 include("targets/ortops_fused_kernel_cuda.cmake")
 
 #
