@@ -383,8 +383,8 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         numpy.testing.assert_allclose(z.astype(numpy.float32), expected, rtol=1e-2, atol=1e-2)
 
     @unittest.skipUnless(_BFLOAT16_DTYPE is not None, "No bfloat16 dtype available")
-    def test_bfloat16_remaining_added_kernels(self):
-        """Tests bfloat16 execution for all remaining newly added CUDA kernels."""
+    def test_bfloat16_fused_kernel_suite(self):
+        """Tests bfloat16 execution for the fused-kernel bf16 coverage suite."""
         import onnx
 
         shape = (4, 4)
