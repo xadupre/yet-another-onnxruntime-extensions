@@ -81,6 +81,7 @@ class TestExtendedReferenceEvaluator(ExtTestCase):
         (result,) = ref.run(None, {"A": a, "B": b, "C": c})
         self.assertEqualArray(a * b * c, result)
 
+    def test_custom_op_via_new_ops(self):
         class DoubleOp(OpRun):
             op_domain = "test.domain"
 
