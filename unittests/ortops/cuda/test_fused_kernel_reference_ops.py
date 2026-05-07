@@ -1,8 +1,8 @@
 """Tests for the Python reference implementations of fused-kernel CUDA custom ops.
 
-These tests exercise every op in ``yaourt.ortops.fused_kernel.reference_ops``
-against the same expected values that the CUDA tests use, verifying that the
-reference kernels are correct.
+These tests exercise every op in
+``yaourt.ortops.fused_kernel.reference_ops`` against the same expected values
+that the CUDA tests use, verifying that the reference kernels are correct.
 """
 
 import unittest

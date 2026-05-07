@@ -2,7 +2,7 @@
 
 These :class:`~onnx.reference.op_run.OpRun` subclasses provide CPU-only
 reference kernels for every operator registered in the
-``yaourt.ortops.fused_kernel.cuda`` domain.  They are useful for unit-testing
+``yaourt.ortops.fused_kernel.cuda`` domain. They are useful for unit-testing
 model topology and numeric correctness without a CUDA device, and can be
 passed directly to :class:`~yaourt.reference.ExtendedReferenceEvaluator` via
 ``new_ops``.
