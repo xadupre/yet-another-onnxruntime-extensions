@@ -82,3 +82,8 @@ if os.environ.get("CI"):
     # warning that Sphinx emits for :doc:`fused_cuda` references even inside
     # ``.. only:: not ci`` blocks (Sphinx resolves refs before evaluating tags).
     suppress_warnings.append("ref.doc")
+    # fused_cuda.rst is in exclude_patterns, so also suppress the warning
+    # Sphinx emits when a toctree references an excluded document (even when
+    # the toctree is inside a ``.. only:: not ci`` block, Sphinx still
+    # processes toctree entries before evaluating ``.. only::`` conditions).
+    suppress_warnings.append("toc.excluded")

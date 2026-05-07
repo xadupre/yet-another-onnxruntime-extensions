@@ -433,8 +433,10 @@ def _parse_cuda_header_file_doc(path: str) -> str:
         line = re.sub(r"@file\s+\S+", "", line).strip()
         # Remove @brief tag (keep its text).
         line = re.sub(r"@brief\s*", "", line).strip()
-        # Remove @c <word> inline code tags (keep the word).
-        line = re.sub(r"@c\s+(\S+)", r"\1", line)
+        # Remove @c <word> inline code tags (wrap the word in backticks so that
+        # trailing underscores, e.g. ``rotary_side_``, are not misinterpreted
+        # as RST anonymous-hyperlink targets).
+        line = re.sub(r"@c\s+(\S+)", r"``\1``", line)
         # Drop @code and @endcode lines (fenced pseudo-code blocks).
         if re.match(r"\s*@(code|endcode)\b", line):
             continue
