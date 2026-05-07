@@ -279,13 +279,13 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         return model.SerializeToString()
 
     def _to_bfloat16(self, value):
-        """Converts an array to bfloat16 through float32."""
+        """Converts an array to bfloat16 through float32 and returns the converted array."""
         return value.astype(numpy.float32).astype(_BFLOAT16_DTYPE)
 
     def _assert_bfloat16_allclose(
         self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
     ) -> None:
-        """Compares two arrays using float32 views for bfloat16-friendly tolerance."""
+        """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
         numpy.testing.assert_allclose(
             got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
         )
