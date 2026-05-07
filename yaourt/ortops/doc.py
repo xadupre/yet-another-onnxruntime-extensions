@@ -322,6 +322,8 @@ def _parse_cuda_lib_cu(path: str) -> str:
     with open(path, encoding="utf-8") as fh:
         content = fh.read()
 
+    # c_OpDomain is the C++ static string constant that holds the ONNX domain
+    # for all operators registered in this library (e.g. "yaourt.ortops.fused_kernel.cuda").
     m = re.search(r'c_OpDomain\s*=\s*"([^"]+)"', content)
     if not m:
         warnings.warn(
@@ -346,9 +348,15 @@ def _parse_cuda_kernel_cu(path: str) -> tuple[list[str], int, int, str]:
     with open(path, encoding="utf-8") as fh:
         content = fh.read()
 
-    # Locate GetName() method bodies.  The body regex stops at the first
-    # unmatched '}'; for switch-based methods with nested braces we capture
-    # everything up to the closing '};' or '}' on its own line.
+    # Locate GetName() method bodies using a regex that handles one level of
+    # nested braces (needed for switch-statement bodies in GetName).
+    # Pattern explanation:
+    #   GetName\s*\(\s*\)\s*const\s*\{  — matches 'GetName() const {'
+    #   (                                — capture group: method body
+    #     [^}]+                          — any non-'}' chars (base case, no nesting)
+    #     (?:\{[^}]*\}[^}]*)*            — optionally followed by {...} blocks (one level deep)
+    #   )                                — end capture
+    #   \}                               — closing brace of the method
     get_name_re = re.compile(
         r"GetName\s*\(\s*\)\s*const\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}", re.DOTALL
     )
