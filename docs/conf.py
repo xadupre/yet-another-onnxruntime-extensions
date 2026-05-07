@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -51,7 +52,18 @@ breathe_default_project = "yaourt"
 sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_examples"]}
 
 # templates_path = ["_templates"]
-exclude_patterns = ["build"]
+# Exclude the CI durations page when building in CI (e.g. GitHub Actions sets CI=true)
+# because the page queries the GitHub REST API and makes network requests unsuitable for CI.
+_exclude_patterns = ["build"]
+if os.environ.get("CI"):
+    _exclude_patterns.append("ci_durations.rst")
+
+exclude_patterns = _exclude_patterns
+
+# Tag used by the ``.. only::`` directive in docs to conditionally include content.
+# Set when running under CI so that the ci_durations page is skipped.
+if os.environ.get("CI"):
+    tags.add("ci_build")  # noqa: F821  (``tags`` is injected by Sphinx)
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_logo = "_static/logo.svg"
