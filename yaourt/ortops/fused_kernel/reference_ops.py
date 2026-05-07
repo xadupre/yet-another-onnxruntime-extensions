@@ -9,7 +9,8 @@ All kernels are listed in :data:`ALL_OPS` and are pre-registered in
 using fused-kernel CUDA ops can be evaluated on CPU without a GPU or the
 compiled shared library — no ``new_ops`` argument is required:
 
-.. code-block:: python
+.. runpython::
+    :showcode:
 
     import numpy as np
     import onnx.helper as oh
@@ -33,7 +34,7 @@ compiled shared library — no ``new_ops`` argument is required:
     b = np.array([4.0, 5.0, 6.0], dtype=np.float32)
     c = np.array([7.0, 8.0, 9.0], dtype=np.float32)
     (result,) = ref.run(None, {"A": a, "B": b, "C": c})
-    print(result)  # [28. 80. 162.]
+    print(result)
 
 Individual kernels can also be passed explicitly via ``new_ops`` when only a
 subset of operators is needed.

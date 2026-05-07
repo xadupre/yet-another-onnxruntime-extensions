@@ -149,7 +149,8 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
 
     The class overloads or adds the following operators by default:
 
-    .. code-block:: python
+    .. runpython::
+        :showcode:
 
         import pprint
         from yaourt.reference import ExtendedReferenceEvaluator
@@ -163,7 +164,8 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
     a GPU or the compiled CUDA shared library — no ``new_ops`` argument is
     required:
 
-    .. code-block:: python
+    .. runpython::
+        :showcode:
 
         import numpy as np
         import onnx.helper as oh
@@ -188,7 +190,7 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
         b = np.array([4.0, 5.0, 6.0], dtype=np.float32)
         c = np.array([7.0, 8.0, 9.0], dtype=np.float32)
         (result,) = ref.run(None, {"A": a, "B": b, "C": c})
-        print(result)  # [28. 80. 162.]
+        print(result)
     """
 
     default_ops: List[type[OpRun]] = list(_FUSED_KERNEL_OPS)
