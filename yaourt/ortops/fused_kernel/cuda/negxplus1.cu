@@ -36,7 +36,7 @@ template <> __device__ __inline__ __nv_bfloat16 _neg1plusx(const __nv_bfloat16 x
 #if __CUDA_ARCH__ < 800
   return __float2bfloat16(1.0f - __bfloat162float(x));
 #else
-  return (__nv_bfloat16)1 - x;
+  return __float2bfloat16(1.0f) - x;
 #endif
 }
 
