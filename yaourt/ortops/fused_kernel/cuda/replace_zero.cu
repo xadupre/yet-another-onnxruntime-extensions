@@ -32,6 +32,12 @@ template <> __device__ __inline__ half _replace_zero(const half x, const half by
 #endif
 }
 
+template <>
+__device__ __inline__ __nv_bfloat16 _replace_zero(const __nv_bfloat16 x,
+                                                  const __nv_bfloat16 by) {
+  return __bfloat162float(x) == 0.0f ? by : x;
+}
+
 template <typename T>
 __global__ void _ReplaceZeroKernel(T *output_data, const T *input_data, CUDA_LONG N,
                                    const T by) {
@@ -44,6 +50,7 @@ __global__ void _ReplaceZeroKernel(T *output_data, const T *input_data, CUDA_LON
 template <typename T> T _cvt(float value) { return (T)value; }
 
 template <> half _cvt(float value) { return __float2half(value); }
+template <> __nv_bfloat16 _cvt(float value) { return __float2bfloat16(value); }
 
 template <typename T>
 void ReplaceZeroImpl(cudaStream_t stream, T *output_data, const T *input_data, size_t count,
@@ -136,5 +143,6 @@ template <typename T> void ReplaceZeroKernel<T>::Compute(OrtKernelContext *conte
 
 static ReplaceZeroOp<float> _kernel_f32;
 static ReplaceZeroOp<half> _kernel_f16;
+static ReplaceZeroOp<__nv_bfloat16> _kernel_bf16;
 
 } // namespace ortops

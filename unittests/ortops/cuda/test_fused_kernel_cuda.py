@@ -34,6 +34,20 @@ def _lib_available() -> bool:
     return os.path.exists(_LIB_PATH)
 
 
+def _get_bfloat16_dtype():
+    """Returns the available numpy-compatible bfloat16 dtype, if any."""
+    if hasattr(numpy, "bfloat16"):
+        return numpy.bfloat16
+    try:
+        import ml_dtypes
+    except ImportError:
+        return None
+    return ml_dtypes.bfloat16
+
+
+_BFLOAT16_DTYPE = _get_bfloat16_dtype()
+
+
 @unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
 @requires_cuda_onnxruntime()
 @requires_onnxruntime("1.18")
@@ -280,6 +294,22 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         (y,) = sess.run(None, {"X": x})
         numpy.testing.assert_allclose(y, 1.0 - x, rtol=1e-5)
 
+    @unittest.skipUnless(_BFLOAT16_DTYPE is not None, "No bfloat16 dtype available")
+    def test_negxplus1_bfloat16(self):
+        """NegXplus1 computes 1 - x correctly for bfloat16."""
+        import onnx
+
+        shape = (4, 8)
+        model = self._make_unary_model("NegXplus1", onnx.TensorProto.BFLOAT16, shape)
+        sess = self._make_inference_session(model)
+
+        x = numpy.random.rand(*shape).astype(numpy.float32).astype(_BFLOAT16_DTYPE)
+        (y,) = sess.run(None, {"X": x})
+        expected = (1.0 - x.astype(numpy.float32)).astype(_BFLOAT16_DTYPE)
+        numpy.testing.assert_allclose(
+            y.astype(numpy.float32), expected.astype(numpy.float32), rtol=5e-3
+        )
+
     def test_replace_zero_float32(self):
         """ReplaceZero replaces zero entries with the given scalar."""
         import onnx
@@ -322,6 +352,23 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         c = rng.standard_normal(shape).astype(numpy.float32)
         (z,) = sess.run(None, {"A": a, "B": b, "C": c})
         numpy.testing.assert_allclose(z, (a + b) * c, rtol=1e-5)
+
+    @unittest.skipUnless(_BFLOAT16_DTYPE is not None, "No bfloat16 dtype available")
+    def test_addmul_bfloat16(self):
+        """AddMul computes (A + B) * C element-wise for bfloat16."""
+        import onnx
+
+        shape = (4, 4)
+        model = self._make_ternary_model("AddMul", onnx.TensorProto.BFLOAT16, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(12)
+        a = rng.standard_normal(shape).astype(numpy.float32).astype(_BFLOAT16_DTYPE)
+        b = rng.standard_normal(shape).astype(numpy.float32).astype(_BFLOAT16_DTYPE)
+        c = rng.standard_normal(shape).astype(numpy.float32).astype(_BFLOAT16_DTYPE)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        expected = (a.astype(numpy.float32) + b.astype(numpy.float32)) * c.astype(numpy.float32)
+        numpy.testing.assert_allclose(z.astype(numpy.float32), expected, rtol=1e-2, atol=1e-2)
 
     def test_muladd_float32(self):
         """MulAdd computes A * B + C element-wise."""

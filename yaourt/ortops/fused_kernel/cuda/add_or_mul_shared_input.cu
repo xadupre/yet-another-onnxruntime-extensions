@@ -37,6 +37,13 @@ __device__ __forceinline__ void _add3_op(half *ab, half *ac, const half a, const
 #endif
 }
 
+__device__ __forceinline__ void _add3_op(__nv_bfloat16 *ab, __nv_bfloat16 *ac,
+                                         const __nv_bfloat16 a, const __nv_bfloat16 b,
+                                         const __nv_bfloat16 c) {
+  *ab = __float2bfloat16(__bfloat162float(a) + __bfloat162float(b));
+  *ac = __float2bfloat16(__bfloat162float(a) + __bfloat162float(c));
+}
+
 __device__ __forceinline__ void _mul3_op(float *ab, float *ac, const float a, const float b,
                                          const float c) {
   *ab = a * b;
@@ -52,6 +59,13 @@ __device__ __forceinline__ void _mul3_op(half *ab, half *ac, const half a, const
   *ab = a * b;
   *ac = a * c;
 #endif
+}
+
+__device__ __forceinline__ void _mul3_op(__nv_bfloat16 *ab, __nv_bfloat16 *ac,
+                                         const __nv_bfloat16 a, const __nv_bfloat16 b,
+                                         const __nv_bfloat16 c) {
+  *ab = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b));
+  *ac = __float2bfloat16(__bfloat162float(a) * __bfloat162float(c));
 }
 
 template <typename T> struct Mul3SharedOp {
@@ -249,7 +263,9 @@ void AddOrMulSharedInputKernel<T, addition>::Compute(OrtKernelContext *context) 
 
 static AddOrMulSharedInputOp<float, true> _add332;
 static AddOrMulSharedInputOp<half, true> _add316;
+static AddOrMulSharedInputOp<__nv_bfloat16, true> _add3bf16;
 static AddOrMulSharedInputOp<float, false> _mul332;
 static AddOrMulSharedInputOp<half, false> _mul316;
+static AddOrMulSharedInputOp<__nv_bfloat16, false> _mul3bf16;
 
 } // namespace ortops

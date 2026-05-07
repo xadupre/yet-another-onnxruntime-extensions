@@ -32,6 +32,10 @@ template <> __device__ __inline__ half _neg1plusx(const half x) {
 #endif
 }
 
+template <> __device__ __inline__ __nv_bfloat16 _neg1plusx(const __nv_bfloat16 x) {
+  return __float2bfloat16(1.0f - __bfloat162float(x));
+}
+
 template <typename T>
 __global__ void _NegXplus1Kernel(T *output_data, const T *input_data, CUDA_LONG N) {
   CUDA_LONG id = blockDim.x * blockIdx.x + threadIdx.x;
@@ -125,5 +129,6 @@ template <typename T> void NegXplus1Kernel<T>::Compute(OrtKernelContext *context
 static NegXplus1Op<float> _kernel_f32;
 static NegXplus1Op<int32_t> _kernel_i32;
 static NegXplus1Op<half> _kernel_f16;
+static NegXplus1Op<__nv_bfloat16> _kernel_bf16;
 
 } // namespace ortops

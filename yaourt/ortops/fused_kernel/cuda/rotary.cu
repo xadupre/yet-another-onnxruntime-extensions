@@ -28,6 +28,10 @@ template <> __device__ __inline__ half _neg(const half x) {
 }
 #endif
 
+template <> __device__ __inline__ __nv_bfloat16 _neg(const __nv_bfloat16 x) {
+  return __float2bfloat16(-__bfloat162float(x));
+}
+
 template <typename T, RotarySide side>
 __global__ void _RotaryKernelLeft(T *output_data, const T *input_data, CUDA_LONG half_N,
                                   CUDA_LONG half_stride) {
@@ -199,5 +203,6 @@ template <typename T> void RotaryKernel<T>::Compute(OrtKernelContext *context) {
 
 static RotaryOp<float> _rot_f32;
 static RotaryOp<half> _rot_f16;
+static RotaryOp<__nv_bfloat16> _rot_bf16;
 
 } // namespace ortops

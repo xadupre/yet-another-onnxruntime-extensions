@@ -8,6 +8,7 @@
 #include "yaourt_helpers.h"
 
 #ifdef __CUDACC__
+#include <cuda_bf16.h>
 #include <cuda_fp16.h>
 #endif
 
@@ -49,6 +50,12 @@ template <> struct CTypeToOnnxType<double> {
 template <> struct CTypeToOnnxType<half> {
   inline ONNXTensorElementDataType onnx_type() const {
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16;
+  }
+};
+
+template <> struct CTypeToOnnxType<__nv_bfloat16> {
+  inline ONNXTensorElementDataType onnx_type() const {
+    return ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16;
   }
 };
 #endif

@@ -34,6 +34,12 @@ __device__ __forceinline__ void _add3_op(half *address, const half a, const half
 #endif
 }
 
+__device__ __forceinline__ void _add3_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
+                                         const __nv_bfloat16 b, const __nv_bfloat16 c) {
+  *address = __float2bfloat16(__bfloat162float(a) + __bfloat162float(b) +
+                              __bfloat162float(c));
+}
+
 __device__ __forceinline__ void _mul3_op(float *address, const float a, const float b,
                                          const float c) {
   *address = a * b * c;
@@ -46,6 +52,12 @@ __device__ __forceinline__ void _mul3_op(half *address, const half a, const half
 #else
   *address = a * b * c;
 #endif
+}
+
+__device__ __forceinline__ void _mul3_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
+                                         const __nv_bfloat16 b, const __nv_bfloat16 c) {
+  *address = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b) *
+                              __bfloat162float(c));
 }
 
 template <typename T> struct Mul3Op {
@@ -263,7 +275,9 @@ void AddAddMulMulKernel<T, addition>::Compute(OrtKernelContext *context) {
 
 static AddAddMulMulOp<float, true> _add332;
 static AddAddMulMulOp<half, true> _add316;
+static AddAddMulMulOp<__nv_bfloat16, true> _add3bf16;
 static AddAddMulMulOp<float, false> _mul332;
 static AddAddMulMulOp<half, false> _mul316;
+static AddAddMulMulOp<__nv_bfloat16, false> _mul3bf16;
 
 } // namespace ortops
