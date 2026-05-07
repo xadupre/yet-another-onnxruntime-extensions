@@ -80,3 +80,5 @@ intersphinx_mapping = {
 }
 
 suppress_warnings = ["intersphinx.external"]
+if os.environ.get("CI"):
+    suppress_warnings.append("toc.excluded")
