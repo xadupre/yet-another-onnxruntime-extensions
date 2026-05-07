@@ -279,7 +279,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         return model.SerializeToString()
 
     def _to_bfloat16(self, value):
-        """Converts an array to bfloat16 through float32 and returns the converted array."""
+        """Converts an array to bfloat16 through float32."""
         return value.astype(numpy.float32).astype(_BFLOAT16_DTYPE)
 
     def _assert_bfloat16_allclose(
@@ -384,7 +384,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     @unittest.skipUnless(_BFLOAT16_DTYPE is not None, "No bfloat16 dtype available")
     def test_bfloat16_remaining_added_kernels(self):
-        """Covers bfloat16 execution for all remaining newly added CUDA kernels."""
+        """Tests bfloat16 execution for all remaining newly added CUDA kernels."""
         import onnx
 
         shape = (4, 4)
