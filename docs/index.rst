@@ -124,6 +124,6 @@ Load the custom C++ operators:
     :caption: Contents
 
     getting_started
-    custom_ops
+    custom_ops/index
     api/index
     auto_examples/index

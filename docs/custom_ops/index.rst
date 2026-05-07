@@ -8,16 +8,15 @@ dedicated page:
 .. toctree::
     :maxdepth: 1
 
-    custom_ops_sparse_cpu
-    custom_ops_fused_cuda
+    sparse_cpu
+    fused_cuda
 
 Sparse CPU Operators
     Operators registered under ``yaourt.ortops.sparse.cpu`` running on
     the ``CPUExecutionProvider``.  Included as a pre-built binary in the
-    wheel — see :doc:`custom_ops_sparse_cpu` for the full catalogue.
+    wheel — see :doc:`sparse_cpu` for the full catalogue.
 
 Fused Kernel CUDA Operators
     Operators registered under ``yaourt.ortops.fused_kernel.cuda`` running
     on the ``CUDAExecutionProvider``.  Require a CUDA-enabled build — see
-    :doc:`custom_ops_fused_cuda` for the full catalogue and build
-    instructions.
+    :doc:`fused_cuda` for the full catalogue and build instructions.

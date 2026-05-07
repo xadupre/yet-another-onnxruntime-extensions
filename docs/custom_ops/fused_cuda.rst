@@ -10,7 +10,7 @@ maintenance.
 These operators are registered under the
 ``yaourt.ortops.fused_kernel.cuda`` domain and run on the
 ``CUDAExecutionProvider``.  The shared library must be compiled from source
-with a CUDA-enabled CMake build — see :doc:`getting_started` for instructions.
+with a CUDA-enabled CMake build — see :doc:`../getting_started` for instructions.
 Once built, it can be loaded via
 :data:`~yaourt.ortops.FUSED_KERNEL_CUDA_LIB_PATH`.
 
