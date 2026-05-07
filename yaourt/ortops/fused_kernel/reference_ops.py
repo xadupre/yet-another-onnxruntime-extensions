@@ -99,7 +99,11 @@ _DOMAIN = "yaourt.ortops.fused_kernel.cuda"
 
 
 class NegXplus1(OpRun):
-    """Computes ``1 - x`` element-wise."""
+    """Computes ``1 - x`` element-wise.
+
+    :param X: input tensor (any numeric dtype).
+    :returns: output tensor of the same shape and dtype as *X*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -109,7 +113,13 @@ class NegXplus1(OpRun):
 
 
 class ReplaceZero(OpRun):
-    """Replaces zero elements with the scalar attribute ``by``."""
+    """Replaces every zero element with the scalar attribute ``by``.
+
+    :param X: input tensor (any numeric dtype).
+    :param by: scalar replacement value for zero elements (default ``0.0``).
+    :returns: output tensor of the same shape and dtype as *X* with zeros
+        replaced by *by*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -120,7 +130,11 @@ class ReplaceZero(OpRun):
 
 
 class MulSigmoid(OpRun):
-    """Computes ``x * sigmoid(x)`` element-wise (Swish activation)."""
+    """Computes ``x * sigmoid(x)`` element-wise (Swish / SiLU activation).
+
+    :param X: input tensor (float32 or float64).
+    :returns: output tensor of the same shape and dtype as *X*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -132,7 +146,11 @@ class MulSigmoid(OpRun):
 
 
 class Transpose2DCastFP16(OpRun):
-    """Transposes a 2-D float32 matrix and casts the result to float16."""
+    """Transposes a 2-D float32 matrix and casts the result to float16.
+
+    :param X: 2-D input tensor of dtype float32 with shape ``(M, N)``.
+    :returns: 2-D output tensor of dtype float16 with shape ``(N, M)``.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -142,7 +160,11 @@ class Transpose2DCastFP16(OpRun):
 
 
 class Transpose2DCastFP32(OpRun):
-    """Transposes a 2-D float16 matrix and casts the result to float32."""
+    """Transposes a 2-D float16 matrix and casts the result to float32.
+
+    :param X: 2-D input tensor of dtype float16 with shape ``(M, N)``.
+    :returns: 2-D output tensor of dtype float32 with shape ``(N, M)``.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -157,7 +179,13 @@ class Transpose2DCastFP32(OpRun):
 
 
 class MulMulSigmoid(OpRun):
-    """Computes ``x * y * sigmoid(y)`` element-wise."""
+    """Computes ``x * y * sigmoid(y)`` element-wise.
+
+    :param X: first input tensor.
+    :param Y: second input tensor (used for both the multiplication and the
+        sigmoid gate); must be broadcastable with *X*.
+    :returns: output tensor of the same shape and dtype as *X*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -174,7 +202,13 @@ class MulMulSigmoid(OpRun):
 
 
 class AddMul(OpRun):
-    """Computes ``(A + B) * C`` element-wise."""
+    """Computes ``(A + B) * C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor (scale); must be broadcastable with *A* + *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -184,7 +218,13 @@ class AddMul(OpRun):
 
 
 class MulAdd(OpRun):
-    """Computes ``A * B + C`` element-wise."""
+    """Computes ``A * B + C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: bias tensor; must be broadcastable with *A* * *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -194,7 +234,13 @@ class MulAdd(OpRun):
 
 
 class SubMul(OpRun):
-    """Computes ``(A - B) * C`` element-wise."""
+    """Computes ``(A - B) * C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: scale tensor; must be broadcastable with *A* - *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -204,7 +250,13 @@ class SubMul(OpRun):
 
 
 class MulSub(OpRun):
-    """Computes ``A * B - C`` element-wise."""
+    """Computes ``A * B - C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: bias tensor to subtract; must be broadcastable with *A* * *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -214,7 +266,13 @@ class MulSub(OpRun):
 
 
 class AddAdd(OpRun):
-    """Computes ``A + B + C`` element-wise."""
+    """Computes ``A + B + C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A* + *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -224,7 +282,13 @@ class AddAdd(OpRun):
 
 
 class MulMul(OpRun):
-    """Computes ``A * B * C`` element-wise."""
+    """Computes ``A * B * C`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A* * *B*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -239,7 +303,14 @@ class MulMul(OpRun):
 
 
 class AddSharedInput(OpRun):
-    """Computes ``(A + B, A + C)`` element-wise, producing two outputs."""
+    """Computes ``(A + B, A + C)`` element-wise, producing two outputs.
+
+    :param A: shared input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A*.
+    :returns: tuple ``(A + B, A + C)``, each with the same shape and dtype
+        as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -249,7 +320,14 @@ class AddSharedInput(OpRun):
 
 
 class MulSharedInput(OpRun):
-    """Computes ``(A * B, A * C)`` element-wise, producing two outputs."""
+    """Computes ``(A * B, A * C)`` element-wise, producing two outputs.
+
+    :param A: shared input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A*.
+    :returns: tuple ``(A * B, A * C)``, each with the same shape and dtype
+        as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -264,7 +342,14 @@ class MulSharedInput(OpRun):
 
 
 class AddAddAdd(OpRun):
-    """Computes ``A + B + C + D`` element-wise."""
+    """Computes ``A + B + C + D`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A* + *B*.
+    :param D: fourth input tensor; must be broadcastable with *A* + *B* + *C*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -274,7 +359,14 @@ class AddAddAdd(OpRun):
 
 
 class MulMulMul(OpRun):
-    """Computes ``A * B * C * D`` element-wise."""
+    """Computes ``A * B * C * D`` element-wise.
+
+    :param A: first input tensor.
+    :param B: second input tensor; must be broadcastable with *A*.
+    :param C: third input tensor; must be broadcastable with *A* * *B*.
+    :param D: fourth input tensor; must be broadcastable with *A* * *B* * *C*.
+    :returns: output tensor of the same shape and dtype as *A*.
+    """
 
     op_domain = _DOMAIN
     op_schema = None
@@ -291,16 +383,19 @@ class MulMulMul(OpRun):
 class Rotary(OpRun):
     """Applies a rotary positional transformation to the last dimension of X.
 
-    The ``side`` attribute (string ``"left"`` or ``"right"``) controls which
-    half of the rotation is computed:
+    The ``side`` attribute controls which half of the rotation is computed:
 
     * **left**: ``out[..., :half] = x[..., half:]``,
       ``out[..., half:] = -x[..., :half]``
     * **right**: ``out[..., :half] = -x[..., half:]``,
       ``out[..., half:] = x[..., :half]``
 
-    The second input ``splits`` is a 1-D int64 tensor ``[half, half]`` whose
-    first element provides the half-size of the last dimension.
+    :param X: input tensor; the last dimension must be ``2 * half``.
+    :param splits: 1-D int64 tensor ``[half, half]``; the first element
+        provides the half-size of the last dimension.
+    :param side: string attribute ``"left"`` (default) or ``"right"``
+        selecting the rotation direction.
+    :returns: output tensor of the same shape and dtype as *X*.
     """
 
     op_domain = _DOMAIN
@@ -369,13 +464,14 @@ def _scatter_nd_of_shape(shape, indices, updates, reduction, masked_value=None):
 class ScatterNDOfShape(OpRun):
     """Scatters ``updates`` into a zero tensor of shape ``shape``.
 
-    Inputs:
-     - ``shape`` — 1-D int64 tensor defining the output shape.
-     - ``indices`` — integer indices tensor.
-     - ``updates`` — data tensor to scatter.
-
-    The ``reduction`` attribute (string, default ``"add"``) controls how
-    conflicts are resolved.
+    :param shape: 1-D int64 tensor defining the output shape.
+    :param indices: integer indices tensor; the last dimension gives the index
+        depth into the output tensor.
+    :param updates: data tensor to scatter into the output.
+    :param reduction: string attribute controlling conflict resolution; one of
+        ``"add"`` (default), ``"none"``, ``"mul"``, ``"min"``, ``"max"``.
+    :returns: output tensor of dtype matching *updates* and shape given by
+        *shape*, filled with scattered values.
     """
 
     op_domain = _DOMAIN
@@ -386,17 +482,21 @@ class ScatterNDOfShape(OpRun):
 
 
 class MaskedScatterNDOfShape(OpRun):
-    """Scatters ``updates`` into a zero tensor of shape ``shape``, skipping
-    index entries equal to ``maskedValue``.
+    """Scatters ``updates`` into a zero tensor, skipping masked index entries.
 
-    Inputs:
-     - ``shape`` — 1-D int64 tensor defining the output shape.
-     - ``indices`` — integer indices tensor.
-     - ``updates`` — data tensor to scatter.
+    Index entries equal to ``maskedValue`` are ignored, leaving the
+    corresponding output positions at zero.
 
-    Attributes:
-     - ``reduction`` (string, default ``"add"``): reduction mode.
-     - ``maskedValue`` (int, default ``-1``): index value to skip.
+    :param shape: 1-D int64 tensor defining the output shape.
+    :param indices: integer indices tensor; the last dimension gives the index
+        depth into the output tensor.
+    :param updates: data tensor to scatter into the output.
+    :param reduction: string attribute controlling conflict resolution; one of
+        ``"add"`` (default), ``"none"``, ``"mul"``, ``"min"``, ``"max"``.
+    :param maskedValue: integer attribute; index entries equal to this value
+        are skipped (default ``-1``).
+    :returns: output tensor of dtype matching *updates* and shape given by
+        *shape*, filled with scattered values.
     """
 
     op_domain = _DOMAIN
@@ -415,15 +515,18 @@ class TriMatrix(OpRun):
     """Fills a 2-D matrix whose elements depend on their position relative to
     the main diagonal.
 
-    Inputs:
-     - ``shape`` — 1-D int64 tensor ``[n_rows, n_cols]``.
-     - ``csts``  — 1-D tensor with three values ``[lower, diag, upper]``.
-
     The output element at ``(r, c)`` equals:
 
     * ``csts[0]`` when ``r > c`` (lower triangle),
     * ``csts[1]`` when ``r == c`` (diagonal),
     * ``csts[2]`` when ``r < c`` (upper triangle).
+
+    :param shape: 1-D int64 tensor ``[n_rows, n_cols]`` giving the output
+        dimensions.
+    :param csts: 1-D tensor with exactly three values
+        ``[lower_value, diag_value, upper_value]``.
+    :returns: 2-D output tensor with shape ``(n_rows, n_cols)`` and dtype
+        matching *csts*.
     """
 
     op_domain = _DOMAIN
