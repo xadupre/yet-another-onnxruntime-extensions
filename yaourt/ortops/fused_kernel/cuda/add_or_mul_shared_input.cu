@@ -40,8 +40,13 @@ __device__ __forceinline__ void _add3_op(half *ab, half *ac, const half a, const
 __device__ __forceinline__ void _add3_op(__nv_bfloat16 *ab, __nv_bfloat16 *ac,
                                          const __nv_bfloat16 a, const __nv_bfloat16 b,
                                          const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *ab = __float2bfloat16(__bfloat162float(a) + __bfloat162float(b));
   *ac = __float2bfloat16(__bfloat162float(a) + __bfloat162float(c));
+#else
+  *ab = a + b;
+  *ac = a + c;
+#endif
 }
 
 __device__ __forceinline__ void _mul3_op(float *ab, float *ac, const float a, const float b,
@@ -64,8 +69,13 @@ __device__ __forceinline__ void _mul3_op(half *ab, half *ac, const half a, const
 __device__ __forceinline__ void _mul3_op(__nv_bfloat16 *ab, __nv_bfloat16 *ac,
                                          const __nv_bfloat16 a, const __nv_bfloat16 b,
                                          const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *ab = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b));
   *ac = __float2bfloat16(__bfloat162float(a) * __bfloat162float(c));
+#else
+  *ab = a * b;
+  *ac = a * c;
+#endif
 }
 
 template <typename T> struct Mul3SharedOp {
