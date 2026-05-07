@@ -254,5 +254,69 @@ class TestBuildCpuOps(ExtTestCase):
         self.assertEqual(ops, {})
 
 
+class TestPrintCpuOpsRst(ExtTestCase):
+    """Tests for print_cpu_ops_rst()."""
+
+    def _capture(self) -> str:
+        """Captures stdout from print_cpu_ops_rst() and returns it as a string."""
+        import io
+        from contextlib import redirect_stdout
+
+        from yaourt.ortops.doc import print_cpu_ops_rst
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            print_cpu_ops_rst()
+        return buf.getvalue()
+
+    def test_returns_non_empty_output(self):
+        output = self._capture()
+        self.assertGreater(len(output), 0)
+
+    def test_output_contains_op_names(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        for op_name in CPU_OPS:
+            self.assertIn(op_name, output)
+
+    def test_output_contains_list_table_directive(self):
+        output = self._capture()
+        self.assertIn(".. list-table::", output)
+
+    def test_output_contains_domain(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        for op in CPU_OPS.values():
+            self.assertIn(op.domain, output)
+
+    def test_output_contains_inputs_and_outputs_sections(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        if any(op.inputs for op in CPU_OPS.values()):
+            self.assertIn("**Inputs**", output)
+        if any(op.outputs for op in CPU_OPS.values()):
+            self.assertIn("**Outputs**", output)
+
+    def test_package_init_re_exports_print_cpu_ops_rst(self):
+        from yaourt.ortops import print_cpu_ops_rst
+
+        self.assertTrue(callable(print_cpu_ops_rst))
+
+    def test_empty_catalogue_prints_fallback_message(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+
+        from yaourt.ortops import doc as doc_module
+
+        buf = io.StringIO()
+        with patch.object(doc_module, "CPU_OPS", {}), redirect_stdout(buf):
+            doc_module.print_cpu_ops_rst()
+        self.assertIn("No CPU ops found", buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

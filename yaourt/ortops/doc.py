@@ -341,3 +341,57 @@ def print_cpu_ops() -> None:
                 desc = f" — {out.description}" if out.description else ""
                 print(f"    {out.name} ({out.dtype}){desc}")
         print()
+
+
+def print_cpu_ops_rst() -> None:
+    """Prints the CPU custom-op catalogue as RST to stdout.
+
+    Renders :data:`CPU_OPS` as valid reStructuredText suitable for a
+    ``.. runpython:: :rst:`` block in the Sphinx documentation.  Each op is
+    rendered as a sub-section with a field list for its metadata, and bulleted
+    lists for its inputs and outputs, ensuring the rendered page is always
+    derived from the C++ source files without manual maintenance.
+
+    .. runpython::
+        :showcode:
+        :rst:
+
+        from yaourt.ortops.doc import print_cpu_ops_rst
+        print_cpu_ops_rst()
+    """
+    if not CPU_OPS:
+        print("*No CPU ops found (C++ source tree not present).*")
+        return
+    for op_name, op in sorted(CPU_OPS.items()):
+        print(op_name)
+        print("~" * len(op_name))
+        print()
+        print(".. list-table::")
+        print("   :widths: 20 80")
+        print("   :header-rows: 0")
+        print()
+        print("   * - **Domain**")
+        print(f"     - ``{op.domain}``")
+        print("   * - **Execution provider**")
+        print(f"     - ``{op.execution_provider}``")
+        print("   * - **Since version**")
+        print(f"     - {op.since_version}")
+        print()
+        if op.doc:
+            for line in op.doc.splitlines():
+                print(line)
+            print()
+        if op.inputs:
+            print("**Inputs**")
+            print()
+            for inp in op.inputs:
+                desc = f" — {inp.description}" if inp.description else ""
+                print(f"* ``{inp.name}`` (*{inp.dtype}*){desc}")
+            print()
+        if op.outputs:
+            print("**Outputs**")
+            print()
+            for out in op.outputs:
+                desc = f" — {out.description}" if out.description else ""
+                print(f"* ``{out.name}`` (*{out.dtype}*){desc}")
+            print()

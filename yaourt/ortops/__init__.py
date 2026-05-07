@@ -5,7 +5,7 @@ from __future__ import annotations
 import platform
 from pathlib import Path
 
-from .doc import CPU_OPS, OrtOpDesc, OrtOpInput, OrtOpOutput, print_cpu_ops
+from .doc import CPU_OPS, OrtOpDesc, OrtOpInput, OrtOpOutput, print_cpu_ops, print_cpu_ops_rst
 
 __all__ = [
     "CPU_OPS",
@@ -17,6 +17,7 @@ __all__ = [
     "OrtOpOutput",
     "get_ort_ext_libs",
     "print_cpu_ops",
+    "print_cpu_ops_rst",
 ]
 
 _HERE = Path(__file__).parent
