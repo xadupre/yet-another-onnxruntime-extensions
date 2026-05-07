@@ -289,11 +289,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
     def _assert_bfloat16_allclose(
         self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
     ) -> None:
-        """Compares two arrays using float32 views with bfloat16-friendly tolerances.
-
-        Returns:
-            None.
-        """
+        """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
         numpy.testing.assert_allclose(
             got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
         )
