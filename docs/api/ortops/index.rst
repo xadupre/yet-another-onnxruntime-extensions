@@ -5,4 +5,4 @@ yaourt.ortops
     :maxdepth: 1
 
     yaourt.ortops.doc
-    yaourt.ortops.fused_kernel.reference_ops
+    fused_kernel/index
