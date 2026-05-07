@@ -534,6 +534,74 @@ def _build_cuda_ops(cuda_dir: str | None = None) -> dict[str, OrtOpDesc]:
 
 
 # ---------------------------------------------------------------------------
+# Fused-kernel CPU parsers
+# ---------------------------------------------------------------------------
+
+
+def _build_fused_kernel_cpu_ops(cpu_dir: str | None = None) -> dict[str, OrtOpDesc]:
+    """Builds the FUSED_KERNEL_CPU_OPS catalogue by parsing the fused-kernel CPU source files.
+
+    Scans the ``yaourt/ortops/fused_kernel/cpu/`` directory for the lib ``.cc``
+    registration file and all kernel ``.h`` header files.  Extracts op names,
+    execution provider and domain from the ``.cc`` file, maps each kernel class
+    to its struct declaration and ``Compute`` signature in the matching ``.h``
+    file to derive input/output metadata, and reads the file-level ``/** */``
+    Doxygen block as the op description.
+
+    :param cpu_dir: path to the fused-kernel CPU source directory; defaults
+        to ``yaourt/ortops/fused_kernel/cpu/`` inside the repo root.
+    :returns: dict mapping op name to :class:`OrtOpDesc`; returns an empty
+        dict when the source directory or the lib ``.cc`` file are not present.
+    """
+    root = _repo_root()
+    if cpu_dir is None:
+        cpu_dir = os.path.join(root, "yaourt", "ortops", "fused_kernel", "cpu")
+
+    lib_cc = os.path.join(cpu_dir, "ort_fused_kernel_cpu_lib.cc")
+    if not os.path.isdir(cpu_dir) or not os.path.exists(lib_cc):
+        return {}
+
+    domain, registrations = _parse_lite_lib_cc(lib_cc)
+    if not registrations:
+        return {}
+
+    # Pre-compute the kernel-class → (params, doc) mapping by scanning all .h
+    # files that are not the export header.
+    kernel_info: dict[str, tuple[list[tuple[str, str, bool]], str]] = {}
+    for fname in sorted(os.listdir(cpu_dir)):
+        if not fname.endswith(".h") or fname == "ort_fused_kernel_cpu_lib.h":
+            continue
+        h_path = os.path.join(cpu_dir, fname)
+        kparams = _parse_lite_header(h_path)
+        if not kparams:
+            continue
+        h_doc = _parse_cuda_header_file_doc(h_path)
+        for kernel_class, params in kparams.items():
+            kernel_info[kernel_class] = (params, h_doc)
+
+    ops: dict[str, OrtOpDesc] = {}
+    for kernel_class, op_name, exec_provider in registrations:
+        params, doc = kernel_info.get(kernel_class, ([], ""))
+        ops[op_name] = OrtOpDesc(
+            name=op_name,
+            domain=domain,
+            since_version=1,
+            execution_provider=exec_provider,
+            inputs=[
+                OrtOpInput(name=n, dtype=t, description="") for n, t, is_in in params if is_in
+            ],
+            outputs=[
+                OrtOpOutput(name=n, dtype=t, description="")
+                for n, t, is_in in params
+                if not is_in
+            ],
+            doc=doc,
+        )
+
+    return ops
+
+
+# ---------------------------------------------------------------------------
 # Public catalogue
 # ---------------------------------------------------------------------------
 
@@ -545,6 +613,11 @@ CPU_OPS: dict[str, OrtOpDesc] = _build_cpu_ops()
 #: *yet-another-onnxruntime-extensions*, keyed by op name.  Populated at
 #: import time by parsing the C++ source files.
 CUDA_OPS: dict[str, OrtOpDesc] = _build_cuda_ops()
+
+#: All fused-kernel CPU custom ops provided by
+#: *yet-another-onnxruntime-extensions*, keyed by op name.  Populated at
+#: import time by parsing the C++ source files.
+FUSED_KERNEL_CPU_OPS: dict[str, OrtOpDesc] = _build_fused_kernel_cpu_ops()
 
 
 def print_cpu_ops() -> None:
@@ -726,4 +799,47 @@ def print_cuda_ops_rst() -> None:
     """
     _print_ops_catalogue(
         CUDA_OPS, empty_message="*No CUDA ops found (C++ source tree not present).*", plain=False
+    )
+
+
+def print_fused_kernel_cpu_ops() -> None:
+    """Prints the fused-kernel CPU custom-op catalogue to stdout.
+
+    Renders :data:`FUSED_KERNEL_CPU_OPS` as plain text suitable for a
+    ``.. runpython::`` block in the Sphinx documentation, ensuring the rendered
+    output is always derived from the C++ source files.
+
+    .. runpython::
+        :showcode:
+
+        from yaourt.ortops.doc import print_fused_kernel_cpu_ops
+        print_fused_kernel_cpu_ops()
+    """
+    _print_ops_catalogue(
+        FUSED_KERNEL_CPU_OPS,
+        empty_message="No fused-kernel CPU ops found (C++ source tree not present).",
+        plain=True,
+    )
+
+
+def print_fused_kernel_cpu_ops_rst() -> None:
+    """Outputs the fused-kernel CPU custom-op catalogue as RST to stdout.
+
+    Renders :data:`FUSED_KERNEL_CPU_OPS` as valid reStructuredText suitable for
+    a ``.. runpython:: :rst:`` block in the Sphinx documentation.  Each op is
+    rendered as a sub-section with a ``list-table`` for its metadata followed by
+    its description, ensuring the rendered page is always derived from the C++
+    source files without manual maintenance.
+
+    .. runpython::
+        :showcode:
+        :rst:
+
+        from yaourt.ortops.doc import print_fused_kernel_cpu_ops_rst
+        print_fused_kernel_cpu_ops_rst()
+    """
+    _print_ops_catalogue(
+        FUSED_KERNEL_CPU_OPS,
+        empty_message="*No fused-kernel CPU ops found (C++ source tree not present).*",
+        plain=False,
     )
