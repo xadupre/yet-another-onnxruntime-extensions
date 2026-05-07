@@ -1,4 +1,4 @@
-yaourt.ortops.fused\_kernel
+yaourt.ortops.fused_kernel
 ==========================
 
 .. toctree::
