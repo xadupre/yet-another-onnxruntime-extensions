@@ -403,9 +403,9 @@ def _parse_cuda_header_file_doc(path: str) -> str:
 
     Extracts the content of the block comment immediately following the
     ``#pragma once`` line, strips the ``*`` prefixes, removes Doxygen
-    ``@file``, ``@brief``, ``@c``, ``@f$``/``@f[``/``@f]``, and ``@tparam``
-    / ``@param`` tags to produce readable plain text suitable for the
-    documentation catalogue.
+    ``@file``, ``@brief``, ``@c``, ``@f$``/``@f[``/``@f]``, ``@code``/
+    ``@endcode``, and ``@tparam`` / ``@param`` tags to produce readable plain
+    text suitable for the documentation catalogue.
 
     :param path: absolute path to the ``.h`` header file.
     :returns: plain-text description string, or empty string when no block
@@ -420,6 +420,10 @@ def _parse_cuda_header_file_doc(path: str) -> str:
         return ""
 
     raw = m.group(1)
+    # Replace @f$ ... @f$ and @f[ ... @f] LaTeX math spans (including
+    # multi-line spans) with a plain-text placeholder before splitting.
+    raw = re.sub(r"@f\$.*?@f\$", "<math>", raw, flags=re.DOTALL)
+    raw = re.sub(r"@f\[.*?@f\]", "<math>", raw, flags=re.DOTALL)
     # Strip leading ' * ' or ' *' from each line.
     lines = [re.sub(r"^\s*\*\s?", "", line) for line in raw.splitlines()]
 
@@ -431,16 +435,43 @@ def _parse_cuda_header_file_doc(path: str) -> str:
         line = re.sub(r"@brief\s*", "", line).strip()
         # Remove @c <word> inline code tags (keep the word).
         line = re.sub(r"@c\s+(\S+)", r"\1", line)
-        # Remove @f$ ... @f$ and @f[ ... @f] LaTeX math delimiters.
-        line = re.sub(r"@f\$[^@]*@f\$", "<math>", line)
-        line = re.sub(r"@f\[[^@]*@f\]", "<math>", line)
+        # Drop @code and @endcode lines (fenced pseudo-code blocks).
+        if re.match(r"\s*@(code|endcode)\b", line):
+            continue
         # Drop @tparam and @param lines (implementation details).
         if re.match(r"\s*@(tparam|param)\b", line):
             continue
         cleaned.append(line)
 
+    # Post-process: ensure continuation lines of bullet-list items are
+    # indented so that docutils does not emit "bullet list ends without a
+    # blank line; unexpected unindent." warnings.  Any non-blank, unindented
+    # line that follows a bullet item (without an intervening blank line) is
+    # indented by two spaces to make it a valid RST continuation.  A blank
+    # line is also inserted before bullet items that directly follow non-bullet
+    # content (e.g. "Inputs:" label lines), so that docutils recognises them
+    # as a proper list rather than a continuation of the preceding paragraph.
+    result_lines: list[str] = []
+    in_bullet = False
+    for line in cleaned:
+        if not line:
+            in_bullet = False
+            result_lines.append(line)
+            continue
+        if line.startswith(("- ", "* ")):
+            if not in_bullet and result_lines and result_lines[-1]:
+                result_lines.append("")  # blank line before the bullet list
+            in_bullet = True
+            result_lines.append(line)
+        elif in_bullet and not line.startswith(" "):
+            result_lines.append("  " + line)
+        else:
+            result_lines.append(line)
+            if not line.startswith(" "):
+                in_bullet = False
+
     # Remove leading/trailing blank lines and join.
-    doc = "\n".join(cleaned).strip()
+    doc = "\n".join(result_lines).strip()
     return doc
 
 
