@@ -1,25 +1,36 @@
-"""Documentation catalogue of CPU custom ORT ops, derived from C++ source files.
+"""Documentation catalogue of custom ORT ops, derived from C++ source files.
 
 Structural metadata (op name, domain, execution provider, input/output names
-and element types) is parsed directly from the C++ lite-API source files at
-import time so that the Python catalogue always stays in sync with the C++
-implementation without any manual maintenance.
+and element types) is parsed directly from the C++ source files at import time
+so that the Python catalogue always stays in sync with the C++ implementation
+without any manual maintenance.
 
-Human-readable documentation strings are parsed from ``///`` Doxygen-style
-doc comments in the C++ header file, so prose descriptions live alongside
-the kernel declarations and are never duplicated in Python.
+Human-readable documentation strings are parsed from Doxygen-style doc
+comments in the C++ header files, so prose descriptions live alongside the
+kernel declarations and are never duplicated in Python.
 
-Supported C++ sources
----------------------
+Supported C++ sources — sparse CPU (lite API)
+----------------------------------------------
 - ``yaourt/ortops/sparse/cpu/ort_sparse_cpu2_lib.cc`` — provides the op domain and the
   ``CreateLiteCustomOp`` registrations (op name → kernel class + exec provider).
 - ``yaourt/ortops/sparse/cpu/ort_sparse_lite.h`` — provides the ``Compute`` method
   signatures and ``///`` doc comments used to extract input/output argument
   names, element types, and prose descriptions.
 
-The :func:`print_cpu_ops` function renders the catalogue as plain text and is
-intended to be called from a ``.. runpython::`` block in the Sphinx docs so
-that the rendered output is always in sync with the C++ source.
+Supported C++ sources — fused kernel CUDA (custom-op-base API)
+---------------------------------------------------------------
+- ``yaourt/ortops/fused_kernel/cuda/ort_fused_kernel_cuda_lib.cu`` — provides the op
+  domain name.
+- ``yaourt/ortops/fused_kernel/cuda/*.cu`` (individual kernel files) — provide
+  ``GetName()``, ``GetInputTypeCount()``, ``GetOutputTypeCount()``, and
+  ``GetExecutionProviderType()`` implementations.
+- ``yaourt/ortops/fused_kernel/cuda/*.h`` (individual header files) — provide
+  ``/** @file … @brief … */`` Doxygen doc blocks used as op descriptions.
+
+The :func:`print_cpu_ops` / :func:`print_cpu_ops_rst` and
+:func:`print_cuda_ops` / :func:`print_cuda_ops_rst` functions render the
+catalogues as plain text or RST and are intended to be called from
+``.. runpython::`` blocks in the Sphinx docs.
 """
 
 from __future__ import annotations
@@ -298,12 +309,201 @@ def _build_cpu_ops(
 
 
 # ---------------------------------------------------------------------------
+# CUDA fused-kernel parsers
+# ---------------------------------------------------------------------------
+
+
+def _parse_cuda_lib_cu(path: str) -> str:
+    """Parses a CUDA lib ``.cu`` file for the op domain name.
+
+    :param path: absolute path to the ``.cu`` lib file
+    :returns: domain string, or empty string when not found.
+    """
+    with open(path, encoding="utf-8") as fh:
+        content = fh.read()
+
+    m = re.search(r'c_OpDomain\s*=\s*"([^"]+)"', content)
+    if not m:
+        warnings.warn(
+            f"Could not find 'c_OpDomain' in {path!r}; domain will be empty.", stacklevel=2
+        )
+    return m.group(1) if m else ""
+
+
+def _parse_cuda_kernel_cu(path: str) -> tuple[list[str], int, int, str]:
+    """Parses a single CUDA kernel ``.cu`` file for op metadata.
+
+    Extracts all op names returned by ``GetName()``, the input/output counts
+    from ``GetInputTypeCount()`` / ``GetOutputTypeCount()``, and the execution
+    provider from ``GetExecutionProviderType()``.
+
+    :param path: absolute path to the ``.cu`` kernel file.
+    :returns: ``(op_names, n_inputs, n_outputs, exec_provider)`` where
+        *op_names* is the list of distinct string literals returned by all
+        ``GetName()`` implementations in the file.  Returns an empty list of
+        op names when none are found.
+    """
+    with open(path, encoding="utf-8") as fh:
+        content = fh.read()
+
+    # Locate GetName() method bodies.  The body regex stops at the first
+    # unmatched '}'; for switch-based methods with nested braces we capture
+    # everything up to the closing '};' or '}' on its own line.
+    get_name_re = re.compile(
+        r"GetName\s*\(\s*\)\s*const\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}", re.DOTALL
+    )
+    # Match string literals only from lines that contain a 'return' keyword,
+    # which avoids picking up error-message strings in EXT_THROW() macros on
+    # non-return lines.
+    string_in_return_re = re.compile(r'"([A-Za-z][A-Za-z0-9_]*)"')
+
+    op_names: list[str] = []
+    for m in get_name_re.finditer(content):
+        body = m.group(1)
+        for line in body.splitlines():
+            if "return" in line:
+                for sm in string_in_return_re.finditer(line):
+                    name = sm.group(1)
+                    if name not in op_names:
+                        op_names.append(name)
+
+    # Extract input and output counts (take the first match in each case).
+    count_re = re.compile(
+        r"GetInputTypeCount\s*\(\s*\)\s*const\s*\{[^}]*return\s+(\d+)", re.DOTALL
+    )
+    cm = count_re.search(content)
+    n_inputs = int(cm.group(1)) if cm else 0
+
+    count_re = re.compile(
+        r"GetOutputTypeCount\s*\(\s*\)\s*const\s*\{[^}]*return\s+(\d+)", re.DOTALL
+    )
+    cm = count_re.search(content)
+    n_outputs = int(cm.group(1)) if cm else 0
+
+    # Extract execution provider.
+    ep_re = re.compile(
+        r"GetExecutionProviderType\s*\(\s*\)\s*const\s*\{[^}]*return\s*\"([^\"]+)\"", re.DOTALL
+    )
+    em = ep_re.search(content)
+    exec_provider = em.group(1) if em else "CUDAExecutionProvider"
+
+    return op_names, n_inputs, n_outputs, exec_provider
+
+
+def _parse_cuda_header_file_doc(path: str) -> str:
+    """Parses the ``/** @file … @brief … */`` Doxygen doc block from a CUDA ``.h`` header.
+
+    Extracts the content of the block comment immediately following the
+    ``#pragma once`` line, strips the ``*`` prefixes, removes Doxygen
+    ``@file``, ``@brief``, ``@c``, ``@f$``/``@f[``/``@f]``, and ``@tparam``
+    / ``@param`` tags to produce readable plain text suitable for the
+    documentation catalogue.
+
+    :param path: absolute path to the ``.h`` header file.
+    :returns: plain-text description string, or empty string when no block
+        comment is found.
+    """
+    with open(path, encoding="utf-8") as fh:
+        content = fh.read()
+
+    # Match the first /* ... */ block comment in the file.
+    m = re.search(r"/\*\*(.*?)\*/", content, re.DOTALL)
+    if not m:
+        return ""
+
+    raw = m.group(1)
+    # Strip leading ' * ' or ' *' from each line.
+    lines = [re.sub(r"^\s*\*\s?", "", line) for line in raw.splitlines()]
+
+    cleaned: list[str] = []
+    for line in lines:
+        # Remove @file tag + filename.
+        line = re.sub(r"@file\s+\S+", "", line).strip()
+        # Remove @brief tag (keep its text).
+        line = re.sub(r"@brief\s*", "", line).strip()
+        # Remove @c <word> inline code tags (keep the word).
+        line = re.sub(r"@c\s+(\S+)", r"\1", line)
+        # Remove @f$ ... @f$ and @f[ ... @f] LaTeX math delimiters.
+        line = re.sub(r"@f\$[^@]*@f\$", "<math>", line)
+        line = re.sub(r"@f\[[^@]*@f\]", "<math>", line)
+        # Drop @tparam and @param lines (implementation details).
+        if re.match(r"\s*@(tparam|param)\b", line):
+            continue
+        cleaned.append(line)
+
+    # Remove leading/trailing blank lines and join.
+    doc = "\n".join(cleaned).strip()
+    return doc
+
+
+def _build_cuda_ops(cuda_dir: str | None = None) -> dict[str, OrtOpDesc]:
+    """Builds the CUDA_OPS catalogue by parsing the fused-kernel CUDA source files.
+
+    Scans the ``yaourt/ortops/fused_kernel/cuda/`` directory for individual
+    kernel ``.cu`` files, extracts op names, input/output counts, and the
+    execution provider, and pairs each op with the description from its
+    corresponding ``.h`` header file.
+
+    :param cuda_dir: path to the fused-kernel CUDA source directory; defaults
+        to ``yaourt/ortops/fused_kernel/cuda/`` inside the repo root.
+    :returns: dict mapping op name to :class:`OrtOpDesc`; returns an empty
+        dict when the CUDA source directory is not present.
+    """
+    root = _repo_root()
+    if cuda_dir is None:
+        cuda_dir = os.path.join(root, "yaourt", "ortops", "fused_kernel", "cuda")
+
+    lib_cu = os.path.join(cuda_dir, "ort_fused_kernel_cuda_lib.cu")
+    if not os.path.isdir(cuda_dir) or not os.path.exists(lib_cu):
+        return {}
+
+    domain = _parse_cuda_lib_cu(lib_cu)
+
+    ops: dict[str, OrtOpDesc] = {}
+    for fname in sorted(os.listdir(cuda_dir)):
+        if not fname.endswith(".cu") or fname == "ort_fused_kernel_cuda_lib.cu":
+            continue
+        cu_path = os.path.join(cuda_dir, fname)
+        op_names, n_inputs, n_outputs, exec_provider = _parse_cuda_kernel_cu(cu_path)
+        if not op_names:
+            continue
+
+        # Try to load the doc from the matching .h file.
+        h_path = os.path.join(cuda_dir, fname.replace(".cu", ".h"))
+        doc = _parse_cuda_header_file_doc(h_path) if os.path.exists(h_path) else ""
+
+        for op_name in op_names:
+            ops[op_name] = OrtOpDesc(
+                name=op_name,
+                domain=domain,
+                since_version=1,
+                execution_provider=exec_provider,
+                inputs=[
+                    OrtOpInput(name=f"input_{i}", dtype="T", description="")
+                    for i in range(n_inputs)
+                ],
+                outputs=[
+                    OrtOpOutput(name=f"output_{i}", dtype="T", description="")
+                    for i in range(n_outputs)
+                ],
+                doc=doc,
+            )
+
+    return ops
+
+
+# ---------------------------------------------------------------------------
 # Public catalogue
 # ---------------------------------------------------------------------------
 
 #: All CPU custom ops provided by *yet-another-onnxruntime-extensions*, keyed
 #: by op name.  Populated at import time by parsing the C++ source files.
 CPU_OPS: dict[str, OrtOpDesc] = _build_cpu_ops()
+
+#: All fused-kernel CUDA custom ops provided by
+#: *yet-another-onnxruntime-extensions*, keyed by op name.  Populated at
+#: import time by parsing the C++ source files.
+CUDA_OPS: dict[str, OrtOpDesc] = _build_cuda_ops()
 
 
 def print_cpu_ops() -> None:
@@ -395,3 +595,94 @@ def print_cpu_ops_rst() -> None:
                 desc = f" — {out.description}" if out.description else ""
                 print(f"* ``{out.name}`` (*{out.dtype}*){desc}")
             print()
+
+
+def _print_ops_catalogue(
+    ops: dict[str, OrtOpDesc], empty_message: str, plain: bool = False
+) -> None:
+    """Renders an op catalogue to stdout in plain text or RST format.
+
+    Shared implementation used by :func:`print_cuda_ops` and
+    :func:`print_cuda_ops_rst`.
+
+    :param ops: op catalogue to render.
+    :param empty_message: message to print when *ops* is empty.
+    :param plain: when ``True`` renders plain text; when ``False`` renders RST.
+    """
+    if not ops:
+        print(empty_message)
+        return
+    for op_name, op in sorted(ops.items()):
+        if plain:
+            print(f"{op_name}")
+            print(f"  domain   : {op.domain}")
+            print(f"  provider : {op.execution_provider}")
+            print(f"  version  : {op.since_version}")
+            if op.doc:
+                for line in op.doc.splitlines():
+                    print(f"  {line}")
+            if op.inputs:
+                print(f"  inputs   : {op.inputs[0].dtype} x{len(op.inputs)}")
+            if op.outputs:
+                print(f"  outputs  : {op.outputs[0].dtype} x{len(op.outputs)}")
+        else:
+            print(op_name)
+            print("~" * len(op_name))
+            print()
+            print(".. list-table::")
+            print("   :widths: 20 80")
+            print("   :header-rows: 0")
+            print()
+            print("   * - **Domain**")
+            print(f"     - ``{op.domain}``")
+            print("   * - **Execution provider**")
+            print(f"     - ``{op.execution_provider}``")
+            print("   * - **Inputs**")
+            print(f"     - {len(op.inputs)}")
+            print("   * - **Outputs**")
+            print(f"     - {len(op.outputs)}")
+            print()
+            if op.doc:
+                for line in op.doc.splitlines():
+                    print(line)
+                print()
+        print()
+
+
+def print_cuda_ops() -> None:
+    """Prints the fused-kernel CUDA custom-op catalogue to stdout.
+
+    Renders :data:`CUDA_OPS` as plain text suitable for a ``.. runpython::``
+    block in the Sphinx documentation, ensuring the rendered output is always
+    derived from the C++ source files.
+
+    .. runpython::
+        :showcode:
+
+        from yaourt.ortops.doc import print_cuda_ops
+        print_cuda_ops()
+    """
+    _print_ops_catalogue(
+        CUDA_OPS, empty_message="No CUDA ops found (C++ source tree not present).", plain=True
+    )
+
+
+def print_cuda_ops_rst() -> None:
+    """Renders the fused-kernel CUDA custom-op catalogue as RST and writes it to stdout.
+
+    Renders :data:`CUDA_OPS` as valid reStructuredText suitable for a
+    ``.. runpython:: :rst:`` block in the Sphinx documentation.  Each op is
+    rendered as a sub-section with a ``list-table`` for its metadata followed
+    by its description, ensuring the rendered page is always derived from the
+    C++ source files without manual maintenance.
+
+    .. runpython::
+        :showcode:
+        :rst:
+
+        from yaourt.ortops.doc import print_cuda_ops_rst
+        print_cuda_ops_rst()
+    """
+    _print_ops_catalogue(
+        CUDA_OPS, empty_message="*No CUDA ops found (C++ source tree not present).*", plain=False
+    )

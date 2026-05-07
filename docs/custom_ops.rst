@@ -1,20 +1,23 @@
 Available Custom Ops
 ====================
 
-This page lists all custom ONNX Runtime operators provided by
-*yet-another-onnxruntime-extensions*.  The catalogue is generated dynamically
-at documentation-build time by parsing the C++ source files, so it always
-reflects the actual implementation without any manual maintenance.
+This section lists all custom ONNX Runtime operators provided by
+*yet-another-onnxruntime-extensions*.  Each family of operators has its own
+dedicated page:
 
-CPU Operators
--------------
+.. toctree::
+    :maxdepth: 1
 
-The following operators are registered under the
-``yaourt.ortops.sparse.cpu`` domain and run on the
-``CPUExecutionProvider``.
+    custom_ops_sparse_cpu
+    custom_ops_fused_cuda
 
-.. runpython::
-    :rst:
+Sparse CPU Operators
+    Operators registered under ``yaourt.ortops.sparse.cpu`` running on
+    the ``CPUExecutionProvider``.  Included as a pre-built binary in the
+    wheel — see :doc:`custom_ops_sparse_cpu` for the full catalogue.
 
-    from yaourt.ortops.doc import print_cpu_ops_rst
-    print_cpu_ops_rst()
+Fused Kernel CUDA Operators
+    Operators registered under ``yaourt.ortops.fused_kernel.cuda`` running
+    on the ``CUDAExecutionProvider``.  Require a CUDA-enabled build — see
+    :doc:`custom_ops_fused_cuda` for the full catalogue and build
+    instructions.

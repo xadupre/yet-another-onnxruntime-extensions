@@ -5,10 +5,21 @@ from __future__ import annotations
 import platform
 from pathlib import Path
 
-from .doc import CPU_OPS, OrtOpDesc, OrtOpInput, OrtOpOutput, print_cpu_ops, print_cpu_ops_rst
+from .doc import (
+    CPU_OPS,
+    CUDA_OPS,
+    OrtOpDesc,
+    OrtOpInput,
+    OrtOpOutput,
+    print_cpu_ops,
+    print_cpu_ops_rst,
+    print_cuda_ops,
+    print_cuda_ops_rst,
+)
 
 __all__ = [
     "CPU_OPS",
+    "CUDA_OPS",
     "FUSED_KERNEL_CUDA_LIB_PATH",
     "SPARSE_CPU2_LIB_PATH",
     "SPARSE_CPU_LIB_PATH",
@@ -18,6 +29,8 @@ __all__ = [
     "get_ort_ext_libs",
     "print_cpu_ops",
     "print_cpu_ops_rst",
+    "print_cuda_ops",
+    "print_cuda_ops_rst",
 ]
 
 _HERE = Path(__file__).parent
