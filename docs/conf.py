@@ -54,14 +54,6 @@ sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_exa
 # templates_path = ["_templates"]
 exclude_patterns = ["build"]
 
-# ---------------------------------------------------------------------------
-# On CI (GitHub Actions sets CI=true) exclude the CUDA custom-ops page since
-# no CUDA device or driver is available in the runner environment.
-# ---------------------------------------------------------------------------
-if os.environ.get("CI"):
-    tags.add("ci")  # noqa: F821 — ``tags`` is injected by Sphinx
-    exclude_patterns.append("custom_ops/fused_cuda.rst")
-
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_logo = "_static/logo.svg"
@@ -78,3 +70,15 @@ intersphinx_mapping = {
 }
 
 suppress_warnings = ["intersphinx.external"]
+
+# ---------------------------------------------------------------------------
+# On CI (GitHub Actions sets CI=true) exclude the CUDA custom-ops page since
+# no CUDA device or driver is available in the runner environment.
+# ---------------------------------------------------------------------------
+if os.environ.get("CI"):
+    tags.add("ci")  # noqa: F821 — ``tags`` is injected by Sphinx
+    exclude_patterns.append("custom_ops/fused_cuda.rst")
+    # fused_cuda.rst is excluded above, so suppress the "unknown document"
+    # warning that Sphinx emits for :doc:`fused_cuda` references even inside
+    # ``.. only:: not ci`` blocks (Sphinx resolves refs before evaluating tags).
+    suppress_warnings.append("ref.doc")
