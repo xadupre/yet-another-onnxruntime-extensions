@@ -344,13 +344,13 @@ def print_cpu_ops() -> None:
 
 
 def print_cpu_ops_rst() -> None:
-    """Prints the CPU custom-op catalogue as RST to stdout.
+    """Renders the CPU custom-op catalogue as RST and writes it to stdout.
 
     Renders :data:`CPU_OPS` as valid reStructuredText suitable for a
     ``.. runpython:: :rst:`` block in the Sphinx documentation.  Each op is
-    rendered as a sub-section with a field list for its metadata, and bulleted
-    lists for its inputs and outputs, ensuring the rendered page is always
-    derived from the C++ source files without manual maintenance.
+    rendered as a sub-section with a ``list-table`` for its metadata, and
+    bulleted lists for its inputs and outputs, ensuring the rendered page is
+    always derived from the C++ source files without manual maintenance.
 
     .. runpython::
         :showcode:
