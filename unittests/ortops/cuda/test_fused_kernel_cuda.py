@@ -290,6 +290,8 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
     ) -> None:
         """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
+        self.assertEqual(got.dtype, _BFLOAT16_DTYPE)
+        self.assertEqual(expected.dtype, _BFLOAT16_DTYPE)
         numpy.testing.assert_allclose(
             got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
         )
@@ -423,7 +425,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         x = self._to_bfloat16(rng.standard_normal(shape))
         (y,) = sess.run(None, {"X": x})
         x32 = x.astype(numpy.float32)
-        sigmoid_x = 1.0 / (1.0 + numpy.exp(-x32.astype(numpy.float64)))
+        sigmoid_x = 1.0 / (1.0 + numpy.exp(-x32))
         expected = self._to_bfloat16(x32 * sigmoid_x)
         self._assert_bfloat16_allclose(y, expected, rtol=2e-2, atol=2e-2)
 
@@ -491,7 +493,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         sess = self._make_inference_session(model)
         (z,) = sess.run(None, {"X": a, "Y": b})
         b32 = b.astype(numpy.float32)
-        sigmoid_b = 1.0 / (1.0 + numpy.exp(-b32.astype(numpy.float64)))
+        sigmoid_b = 1.0 / (1.0 + numpy.exp(-b32))
         expected = self._to_bfloat16(a.astype(numpy.float32) * b32 * sigmoid_b)
         self._assert_bfloat16_allclose(z, expected, rtol=2e-2, atol=2e-2)
 
