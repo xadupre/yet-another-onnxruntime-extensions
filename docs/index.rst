@@ -126,3 +126,4 @@ Load the custom C++ operators:
     getting_started
     api/index
     auto_examples/index
+    ci_durations
