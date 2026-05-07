@@ -29,7 +29,11 @@ template <> __device__ __inline__ half _neg(const half x) {
 #endif
 
 template <> __device__ __inline__ __nv_bfloat16 _neg(const __nv_bfloat16 x) {
+#if __CUDA_ARCH__ < 800
   return __float2bfloat16(-__bfloat162float(x));
+#else
+  return -x;
+#endif
 }
 
 template <typename T, RotarySide side>

@@ -35,9 +35,13 @@ __device__ __forceinline__ void _submul_op(half *address, const half a, const ha
 }
 
 __device__ __forceinline__ void _submul_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                           const __nv_bfloat16 b, const __nv_bfloat16 c) {
+                                            const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16((__bfloat162float(a) - __bfloat162float(b)) *
                               __bfloat162float(c));
+#else
+  *address = (a - b) * c;
+#endif
 }
 
 __device__ __forceinline__ void _submul_neg_op(float *address, const float a, const float b,
@@ -55,9 +59,13 @@ __device__ __forceinline__ void _submul_neg_op(half *address, const half a, cons
 }
 
 __device__ __forceinline__ void _submul_neg_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                               const __nv_bfloat16 b, const __nv_bfloat16 c) {
+                                                const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16((__bfloat162float(b) - __bfloat162float(a)) *
                               __bfloat162float(c));
+#else
+  *address = (b - a) * c;
+#endif
 }
 
 __device__ __forceinline__ void _mulsub_op(float *address, const float a, const float b,
@@ -75,9 +83,13 @@ __device__ __forceinline__ void _mulsub_op(half *address, const half a, const ha
 }
 
 __device__ __forceinline__ void _mulsub_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                           const __nv_bfloat16 b, const __nv_bfloat16 c) {
+                                            const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b) -
                               __bfloat162float(c));
+#else
+  *address = a * b - c;
+#endif
 }
 
 __device__ __forceinline__ void _mulsub_neg_op(float *address, const float a, const float b,
@@ -95,9 +107,13 @@ __device__ __forceinline__ void _mulsub_neg_op(half *address, const half a, cons
 }
 
 __device__ __forceinline__ void _mulsub_neg_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                               const __nv_bfloat16 b, const __nv_bfloat16 c) {
+                                                const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16(__bfloat162float(c) -
                               __bfloat162float(a) * __bfloat162float(b));
+#else
+  *address = c - a * b;
+#endif
 }
 
 template <typename T> struct SubMul {

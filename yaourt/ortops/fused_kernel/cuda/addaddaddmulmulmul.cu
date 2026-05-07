@@ -36,10 +36,14 @@ __device__ __forceinline__ void _add4_op(half *address, const half a, const half
 }
 
 __device__ __forceinline__ void _add4_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                         const __nv_bfloat16 b, const __nv_bfloat16 c,
-                                         const __nv_bfloat16 d) {
+                                          const __nv_bfloat16 b, const __nv_bfloat16 c,
+                                          const __nv_bfloat16 d) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16(__bfloat162float(a) + __bfloat162float(b) +
                               __bfloat162float(c) + __bfloat162float(d));
+#else
+  *address = a + b + c + d;
+#endif
 }
 
 __device__ __forceinline__ void _mul4_op(float *address, const float a, const float b,
@@ -58,10 +62,14 @@ __device__ __forceinline__ void _mul4_op(half *address, const half a, const half
 }
 
 __device__ __forceinline__ void _mul4_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
-                                         const __nv_bfloat16 b, const __nv_bfloat16 c,
-                                         const __nv_bfloat16 d) {
+                                          const __nv_bfloat16 b, const __nv_bfloat16 c,
+                                          const __nv_bfloat16 d) {
+#if __CUDA_ARCH__ < 800
   *address = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b) *
                               __bfloat162float(c) * __bfloat162float(d));
+#else
+  *address = a * b * c * d;
+#endif
 }
 
 template <typename T> struct Mul4Op {
