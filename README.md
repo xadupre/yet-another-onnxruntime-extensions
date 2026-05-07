@@ -5,7 +5,7 @@
 [![coverage](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_coverage.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/ci_coverage.yml)
 [![build](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/build.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/build.yml)
 [![mypy](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/mypy.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/mypy.yml)
-[![Documentation](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/docs.yml)
+[![Documentation](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/docs.yml/badge.svg)](https://xadupre.github.io/yet-another-onnxruntime-extensions/)
 [![Style](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/style.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/style.yml)
 [![pyrefly](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/pyrefly.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/pyrefly.yml)
 [![Spelling](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/spelling.yml/badge.svg)](https://github.com/xadupre/yet-another-onnxruntime-extensions/actions/workflows/spelling.yml)
