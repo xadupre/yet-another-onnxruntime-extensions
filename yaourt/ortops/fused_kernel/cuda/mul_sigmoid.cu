@@ -48,7 +48,7 @@ template <> __device__ __inline__ half sigmoid(const half a) {
 #endif
 
 template <> __device__ __inline__ __nv_bfloat16 sigmoid(const __nv_bfloat16 a) {
-  return __float2bfloat16(sigmoid(__bfloat162float(a)));
+  return __float2bfloat16(sigmoid<float>(__bfloat162float(a)));
 }
 
 template <typename T> __device__ __inline__ T mul_sigmoid(const T a) { return a * sigmoid(a); }
