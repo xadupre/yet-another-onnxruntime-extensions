@@ -52,18 +52,7 @@ breathe_default_project = "yaourt"
 sphinx_gallery_conf = {"examples_dirs": ["examples"], "gallery_dirs": ["auto_examples"]}
 
 # templates_path = ["_templates"]
-# Exclude the CI durations page when building in CI (e.g. GitHub Actions sets CI=true)
-# because the page queries the GitHub REST API and makes network requests unsuitable for CI.
-_exclude_patterns = ["build"]
-if os.environ.get("CI"):
-    _exclude_patterns.append("ci_durations.rst")
-
-exclude_patterns = _exclude_patterns
-
-# Tag used by the ``.. only::`` directive in docs to conditionally include content.
-# Set when running under CI so that the ci_durations page is skipped.
-if os.environ.get("CI"):
-    tags.add("ci_build")  # noqa: F821  (``tags`` is injected by Sphinx)
+exclude_patterns = ["build"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_logo = "_static/logo.svg"
@@ -80,5 +69,23 @@ intersphinx_mapping = {
 }
 
 suppress_warnings = ["intersphinx.external"]
+
+# ---------------------------------------------------------------------------
+# On CI (GitHub Actions sets CI=true) exclude the CUDA custom-ops page since
+# no CUDA device or driver is available in the runner environment.
+# Also exclude the CI durations page because it queries the GitHub REST API
+# and makes network requests unsuitable for CI.
+# ---------------------------------------------------------------------------
 if os.environ.get("CI"):
+    tags.add("ci")  # noqa: F821 — ``tags`` is injected by Sphinx
+    tags.add("ci_build")  # noqa: F821  (``tags`` is injected by Sphinx)
+    exclude_patterns.append("custom_ops/fused_cuda.rst")
+    exclude_patterns.append("ci_durations.rst")
+    # fused_cuda.rst is excluded above, so suppress the "unknown document"
+    # warning that Sphinx emits for :doc:`fused_cuda` references even inside
+    # ``.. only:: not ci`` blocks (Sphinx resolves refs before evaluating tags).
+    suppress_warnings.append("ref.doc")
+    # Suppress the warning Sphinx emits when a toctree references an excluded
+    # document (even when the toctree is inside a ``.. only::`` block, Sphinx
+    # still processes toctree entries before evaluating ``.. only::`` conditions).
     suppress_warnings.append("toc.excluded")
