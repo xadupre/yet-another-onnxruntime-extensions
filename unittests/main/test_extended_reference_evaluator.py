@@ -53,10 +53,34 @@ class TestExtendedReferenceEvaluator(ExtTestCase):
         (result,) = ref.run([x, x])
         self.assertEqualArray(x + x, result)
 
-    def test_default_ops_is_empty(self):
-        self.assertEqual(ExtendedReferenceEvaluator.default_ops, [])
+    def test_default_ops_is_nonempty(self):
+        """default_ops is pre-populated with the fused-kernel CUDA reference kernels."""
+        from yaourt.ortops.fused_kernel.reference_ops import ALL_OPS
 
-    def test_custom_op_via_new_ops(self):
+        self.assertGreater(len(ExtendedReferenceEvaluator.default_ops), 0)
+        for cls in ALL_OPS:
+            self.assertIn(cls, ExtendedReferenceEvaluator.default_ops)
+
+    def test_fused_kernel_ops_work_without_new_ops(self):
+        """Fused-kernel CUDA ops run via default_ops without passing new_ops."""
+        _OP_DOMAIN = "yaourt.ortops.fused_kernel.cuda"
+        model = oh.make_model(
+            oh.make_graph(
+                [oh.make_node("MulMul", ["A", "B", "C"], ["Z"], domain=_OP_DOMAIN)],
+                "mulmul_graph",
+                [oh.make_tensor_value_info(n, TFLOAT, [None]) for n in ("A", "B", "C")],
+                [oh.make_tensor_value_info("Z", TFLOAT, [None])],
+            ),
+            opset_imports=[oh.make_opsetid("", 18), oh.make_opsetid(_OP_DOMAIN, 1)],
+            ir_version=10,
+        )
+        ref = ExtendedReferenceEvaluator(model)
+        a = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        b = np.array([4.0, 5.0, 6.0], dtype=np.float32)
+        c = np.array([7.0, 8.0, 9.0], dtype=np.float32)
+        (result,) = ref.run(None, {"A": a, "B": b, "C": c})
+        self.assertEqualArray(a * b * c, result)
+
         class DoubleOp(OpRun):
             op_domain = "test.domain"
 
