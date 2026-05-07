@@ -131,5 +131,6 @@ Load the custom C++ operators:
 
     .. toctree::
         :maxdepth: 1
+        :caption: Miscellaneous
 
         ci_durations
