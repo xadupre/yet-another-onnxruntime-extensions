@@ -117,12 +117,12 @@ plt.show()
 ## Documentation
 
 Full documentation (API reference, examples, getting started guide) is available at:
-[https://xadupre.github.io/yet-another-onnxruntime-extensions/](https://xadupre.github.io/yet-another-onnxruntime-extensions/)
+[https://xadupre.github.io/docs/yet-another-onnxruntime-extensions/index.html](https://xadupre.github.io/docs/yet-another-onnxruntime-extensions/index.html)
 
 ## Contributing
 
 Contributions are welcome! Please read the
-[Getting Started for Developers](https://xadupre.github.io/yet-another-onnxruntime-extensions/getting_started.html)
+[Getting Started for Developers](https://xadupre.github.io/docs/yet-another-onnxruntime-extensions/getting_started.html)
 guide for instructions on how to clone, build, test, and submit changes.
 
 The project uses [black](https://black.readthedocs.io/) for formatting and
