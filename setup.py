@@ -46,7 +46,11 @@ _CMAKE_OPTIONS: list[tuple[str, str | None, str]] = [
         None,
         'additional cmake configure arguments, space-separated (e.g. "-DFOO=1 -DBAR=2")',
     ),
+    ("cpp-tests", None, "build the C++ unit tests (passes -DBUILD_CPP_TESTS=ON to cmake)"),
 ]
+
+# Names of boolean (flag) options in ``_CMAKE_OPTIONS`` that take no value.
+_CMAKE_BOOLEAN_OPTIONS = ("cpp-tests",)
 
 
 def _cuda_available() -> bool:
@@ -61,7 +65,9 @@ def _package_name() -> str:
     return _BASE_PACKAGE_NAME
 
 
-def _run_cmake(cuda_architectures: str | None = None, cmake_args: str | None = None) -> None:
+def _run_cmake(
+    cuda_architectures: str | None = None, cmake_args: str | None = None, cpp_tests: bool = False
+) -> None:
     """Configures and builds the C++ custom-op shared libraries via cmake.
 
     Prints a warning and returns without error when cmake is absent or when
@@ -73,6 +79,8 @@ def _run_cmake(cuda_architectures: str | None = None, cmake_args: str | None = N
         (e.g. ``"86;89;90"``).
     :param cmake_args: optional space-separated extra cmake configure
         arguments (e.g. ``"-DFOO=bar -DBAZ=1"``).
+    :param cpp_tests: when ``True``, builds the C++ unit tests by passing
+        ``-DBUILD_CPP_TESTS=ON`` to the cmake configure step.
     """
     cmake = shutil.which("cmake")
     if cmake is None:
@@ -108,6 +116,10 @@ def _run_cmake(cuda_architectures: str | None = None, cmake_args: str | None = N
         configure_cmd.extend(cmake_args.split())
         print(f"yaourt: extra cmake args: {cmake_args}", flush=True)
 
+    if cpp_tests:
+        configure_cmd.append("-DBUILD_CPP_TESTS=ON")
+        print("yaourt: building C++ unit tests", flush=True)
+
     build_cmd = [cmake, "--build", str(build_dir), "--config", "Release"]
 
     print("yaourt: cmake configure ...", flush=True)
@@ -133,9 +145,10 @@ def _run_cmake(cuda_architectures: str | None = None, cmake_args: str | None = N
 class _CMakeMixin:
     """Mixin that adds cmake-specific command-line options to a setuptools command.
 
-    Provides ``--cuda-architectures`` and ``--cmake-args`` options that are
-    forwarded to the cmake configure step.  Subclasses must combine
-    ``_CMAKE_OPTIONS`` into their own ``user_options`` so that setuptools
+    Provides ``--cuda-architectures``, ``--cmake-args`` and ``--cpp-tests``
+    options that are forwarded to the cmake configure step.  Subclasses must
+    combine ``_CMAKE_OPTIONS`` into their own ``user_options`` (and
+    ``_CMAKE_BOOLEAN_OPTIONS`` into ``boolean_options``) so that setuptools
     includes them in the ``--help`` output.
     """
 
@@ -144,6 +157,7 @@ class _CMakeMixin:
         super().initialize_options()
         self.cuda_architectures: str | None = None
         self.cmake_args: str | None = None
+        self.cpp_tests: bool = False
 
     def finalize_options(self) -> None:
         """Finalizes cmake-related options."""
@@ -154,9 +168,14 @@ class BuildPy(_CMakeMixin, _build_py):
     """Runs the cmake build before installing the Python sources."""
 
     user_options = _build_py.user_options + _CMAKE_OPTIONS
+    boolean_options = _build_py.boolean_options + list(_CMAKE_BOOLEAN_OPTIONS)
 
     def run(self) -> None:
-        _run_cmake(cuda_architectures=self.cuda_architectures, cmake_args=self.cmake_args)
+        _run_cmake(
+            cuda_architectures=self.cuda_architectures,
+            cmake_args=self.cmake_args,
+            cpp_tests=self.cpp_tests,
+        )
         super().run()
 
 
@@ -164,9 +183,14 @@ class Develop(_CMakeMixin, _develop):
     """Runs the cmake build before setting up the editable install."""
 
     user_options = _develop.user_options + _CMAKE_OPTIONS
+    boolean_options = _develop.boolean_options + list(_CMAKE_BOOLEAN_OPTIONS)
 
     def run(self) -> None:
-        _run_cmake(cuda_architectures=self.cuda_architectures, cmake_args=self.cmake_args)
+        _run_cmake(
+            cuda_architectures=self.cuda_architectures,
+            cmake_args=self.cmake_args,
+            cpp_tests=self.cpp_tests,
+        )
         super().run()
 
 
@@ -179,9 +203,14 @@ class BuildExt(_CMakeMixin, _build_ext):
     """
 
     user_options = _build_ext.user_options + _CMAKE_OPTIONS
+    boolean_options = _build_ext.boolean_options + list(_CMAKE_BOOLEAN_OPTIONS)
 
     def run(self) -> None:
-        _run_cmake(cuda_architectures=self.cuda_architectures, cmake_args=self.cmake_args)
+        _run_cmake(
+            cuda_architectures=self.cuda_architectures,
+            cmake_args=self.cmake_args,
+            cpp_tests=self.cpp_tests,
+        )
         super().run()
 
 

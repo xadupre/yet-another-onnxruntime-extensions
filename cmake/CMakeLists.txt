@@ -33,8 +33,13 @@ include("targets/common.cmake")
 # C++ unit tests
 #
 
-enable_testing()
-include("targets/unittest_cpp.cmake")
+option(BUILD_CPP_TESTS "Build the C++ unit tests" OFF)
+if(BUILD_CPP_TESTS)
+  enable_testing()
+  include("targets/unittest_cpp.cmake")
+else()
+  message(STATUS "C++ unit tests disabled (set -DBUILD_CPP_TESTS=ON to enable)")
+endif()
 
 #
 # new kernels for onnxruntime
