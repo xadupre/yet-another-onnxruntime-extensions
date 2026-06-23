@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -68,3 +69,23 @@ intersphinx_mapping = {
 }
 
 suppress_warnings = ["intersphinx.external"]
+
+# ---------------------------------------------------------------------------
+# On CI (GitHub Actions sets CI=true) exclude the CUDA custom-ops page since
+# no CUDA device or driver is available in the runner environment.
+# Also exclude the CI durations page because it queries the GitHub REST API
+# and makes network requests unsuitable for CI.
+# ---------------------------------------------------------------------------
+if os.environ.get("CI"):
+    tags.add("ci")  # noqa: F821 — ``tags`` is injected by Sphinx
+    tags.add("ci_build")  # noqa: F821  (``tags`` is injected by Sphinx)
+    exclude_patterns.append("custom_ops/fused_cuda.rst")
+    exclude_patterns.append("ci_durations.rst")
+    # fused_cuda.rst is excluded above, so suppress the "unknown document"
+    # warning that Sphinx emits for :doc:`fused_cuda` references even inside
+    # ``.. only:: not ci`` blocks (Sphinx resolves refs before evaluating tags).
+    suppress_warnings.append("ref.doc")
+    # Suppress the warning Sphinx emits when a toctree references an excluded
+    # document (even when the toctree is inside a ``.. only::`` block, Sphinx
+    # still processes toctree entries before evaluating ``.. only::`` conditions).
+    suppress_warnings.append("toc.excluded")

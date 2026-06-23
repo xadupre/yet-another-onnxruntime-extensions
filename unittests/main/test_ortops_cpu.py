@@ -254,5 +254,380 @@ class TestBuildCpuOps(ExtTestCase):
         self.assertEqual(ops, {})
 
 
+class TestPrintCpuOpsRst(ExtTestCase):
+    """Tests for print_cpu_ops_rst()."""
+
+    def _capture(self) -> str:
+        """Captures stdout from print_cpu_ops_rst() and returns it as a string."""
+        import io
+        from contextlib import redirect_stdout
+
+        from yaourt.ortops.doc import print_cpu_ops_rst
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            print_cpu_ops_rst()
+        return buf.getvalue()
+
+    def test_returns_non_empty_output(self):
+        output = self._capture()
+        self.assertGreater(len(output), 0)
+
+    def test_output_contains_op_names(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        for op_name in CPU_OPS:
+            self.assertIn(op_name, output)
+
+    def test_output_contains_list_table_directive(self):
+        output = self._capture()
+        self.assertIn(".. list-table::", output)
+
+    def test_output_contains_domain(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        for op in CPU_OPS.values():
+            self.assertIn(op.domain, output)
+
+    def test_output_contains_inputs_and_outputs_sections(self):
+        from yaourt.ortops.doc import CPU_OPS
+
+        output = self._capture()
+        if any(op.inputs for op in CPU_OPS.values()):
+            self.assertIn("**Inputs**", output)
+        if any(op.outputs for op in CPU_OPS.values()):
+            self.assertIn("**Outputs**", output)
+
+    def test_package_init_re_exports_print_cpu_ops_rst(self):
+        from yaourt.ortops import print_cpu_ops_rst
+
+        self.assertTrue(callable(print_cpu_ops_rst))
+
+    def test_empty_catalogue_prints_fallback_message(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+
+        from yaourt.ortops import doc as doc_module
+
+        buf = io.StringIO()
+        with patch.object(doc_module, "CPU_OPS", {}), redirect_stdout(buf):
+            doc_module.print_cpu_ops_rst()
+        self.assertIn("No CPU ops found", buf.getvalue())
+
+
+# ---------------------------------------------------------------------------
+# CUDA ops catalogue tests
+# ---------------------------------------------------------------------------
+
+_CUDA_DIR = os.path.join(_REPO_ROOT, "yaourt", "ortops", "fused_kernel", "cuda")
+_CUDA_LIB_CU = os.path.join(_CUDA_DIR, "ort_fused_kernel_cuda_lib.cu")
+
+# ---------------------------------------------------------------------------
+# Fused-kernel CPU ops catalogue tests
+# ---------------------------------------------------------------------------
+
+_FUSED_KERNEL_CPU_DIR = os.path.join(_REPO_ROOT, "yaourt", "ortops", "fused_kernel", "cpu")
+_FUSED_KERNEL_CPU_LIB_CC = os.path.join(_FUSED_KERNEL_CPU_DIR, "ort_fused_kernel_cpu_lib.cc")
+
+
+class TestFusedKernelCpuOpsCatalogue(ExtTestCase):
+    """Verifies the fused-kernel CPU custom-op catalogue exposed by yaourt.ortops.doc."""
+
+    def test_fused_kernel_cpu_ops_is_dict(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        self.assertIsInstance(FUSED_KERNEL_CPU_OPS, dict)
+
+    def test_fused_kernel_cpu_ops_contains_mulmul(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        self.assertIn("MulMul", FUSED_KERNEL_CPU_OPS)
+
+    def test_fused_kernel_cpu_ops_domain(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        for op in FUSED_KERNEL_CPU_OPS.values():
+            self.assertEqual(op.domain, "yaourt.ortops.fused_kernel.cpu")
+
+    def test_fused_kernel_cpu_ops_execution_provider(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        for op in FUSED_KERNEL_CPU_OPS.values():
+            self.assertEqual(op.execution_provider, "CPUExecutionProvider")
+
+    def test_mulmul_has_three_inputs_one_output(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        op = FUSED_KERNEL_CPU_OPS["MulMul"]
+        self.assertEqual(len(op.inputs), 3)
+        self.assertEqual(len(op.outputs), 1)
+
+    def test_mulmul_inputs_are_float32(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        op = FUSED_KERNEL_CPU_OPS["MulMul"]
+        for inp in op.inputs:
+            self.assertEqual(inp.dtype, "float32")
+        for out in op.outputs:
+            self.assertEqual(out.dtype, "float32")
+
+    def test_mulmul_has_non_empty_doc(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        op = FUSED_KERNEL_CPU_OPS["MulMul"]
+        self.assertGreater(len(op.doc), 0)
+
+    def test_package_init_re_exports_fused_kernel_cpu_ops(self):
+        from yaourt.ortops import FUSED_KERNEL_CPU_OPS
+
+        self.assertIsInstance(FUSED_KERNEL_CPU_OPS, dict)
+
+    def test_package_init_re_exports_fused_kernel_cpu_lib_path(self):
+        from yaourt.ortops import FUSED_KERNEL_CPU_LIB_PATH
+
+        self.assertIsNotNone(FUSED_KERNEL_CPU_LIB_PATH)
+
+    def test_package_init_re_exports_print_fused_kernel_cpu_ops_rst(self):
+        from yaourt.ortops import print_fused_kernel_cpu_ops_rst
+
+        self.assertTrue(callable(print_fused_kernel_cpu_ops_rst))
+
+
+@unittest.skipUnless(
+    os.path.isdir(_FUSED_KERNEL_CPU_DIR),
+    f"Fused-kernel CPU source dir not found: {_FUSED_KERNEL_CPU_DIR}",
+)
+class TestBuildFusedKernelCpuOps(ExtTestCase):
+    """Tests for _build_fused_kernel_cpu_ops()."""
+
+    def test_build_finds_mulmul(self):
+        from yaourt.ortops.doc import _build_fused_kernel_cpu_ops
+
+        ops = _build_fused_kernel_cpu_ops(cpu_dir=_FUSED_KERNEL_CPU_DIR)
+        self.assertIn("MulMul", ops)
+
+    def test_returns_empty_when_dir_missing(self):
+        from yaourt.ortops.doc import _build_fused_kernel_cpu_ops
+
+        ops = _build_fused_kernel_cpu_ops(cpu_dir="/nonexistent/cpu")
+        self.assertEqual(ops, {})
+
+    def test_get_ort_ext_libs_fused_kernel_cpu_domain(self):
+        from yaourt.ortops import get_ort_ext_libs
+
+        # Should not raise even when the .so is absent.
+        libs = get_ort_ext_libs("CPUExecutionProvider", domain="yaourt.ortops.fused_kernel.cpu")
+        self.assertIsInstance(libs, list)
+
+
+@unittest.skipUnless(
+    os.path.isdir(_FUSED_KERNEL_CPU_DIR),
+    f"Fused-kernel CPU source dir not found: {_FUSED_KERNEL_CPU_DIR}",
+)
+class TestPrintFusedKernelCpuOpsRst(ExtTestCase):
+    """Tests for print_fused_kernel_cpu_ops_rst()."""
+
+    def _capture(self) -> str:
+        """Captures stdout from print_fused_kernel_cpu_ops_rst() and returns it."""
+        import io
+        from contextlib import redirect_stdout
+
+        from yaourt.ortops.doc import print_fused_kernel_cpu_ops_rst
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            print_fused_kernel_cpu_ops_rst()
+        return buf.getvalue()
+
+    def test_returns_non_empty_output(self):
+        output = self._capture()
+        self.assertGreater(len(output), 0)
+
+    def test_output_contains_mulmul(self):
+        output = self._capture()
+        self.assertIn("MulMul", output)
+
+    def test_output_contains_list_table_directive(self):
+        output = self._capture()
+        self.assertIn(".. list-table::", output)
+
+    def test_output_contains_domain(self):
+        output = self._capture()
+        self.assertIn("yaourt.ortops.fused_kernel.cpu", output)
+
+    def test_empty_catalogue_prints_fallback_message(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+
+        from yaourt.ortops import doc as doc_module
+
+        buf = io.StringIO()
+        with patch.object(doc_module, "FUSED_KERNEL_CPU_OPS", {}), redirect_stdout(buf):
+            doc_module.print_fused_kernel_cpu_ops_rst()
+        self.assertIn("No fused-kernel CPU ops found", buf.getvalue())
+
+
+class TestCudaOpsCatalogue(ExtTestCase):
+    """Verifies the CUDA custom-op catalogue exposed by yaourt.ortops.doc."""
+
+    def test_cuda_ops_is_dict(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        self.assertIsInstance(CUDA_OPS, dict)
+
+    def test_cuda_ops_contains_expected_ops(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        expected = {"AddMul", "MulAdd", "NegXplus1", "Rotary", "ScatterNDOfShape"}
+        for name in expected:
+            self.assertIn(name, CUDA_OPS)
+
+    def test_cuda_ops_domain(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        for op in CUDA_OPS.values():
+            self.assertEqual(op.domain, "yaourt.ortops.fused_kernel.cuda")
+
+    def test_cuda_ops_execution_provider(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        for op in CUDA_OPS.values():
+            self.assertEqual(op.execution_provider, "CUDAExecutionProvider")
+
+    def test_package_init_re_exports_cuda_ops(self):
+        from yaourt.ortops import CUDA_OPS
+
+        self.assertIsInstance(CUDA_OPS, dict)
+
+    def test_package_init_re_exports_print_cuda_ops_rst(self):
+        from yaourt.ortops import print_cuda_ops_rst
+
+        self.assertTrue(callable(print_cuda_ops_rst))
+
+
+@unittest.skipUnless(os.path.exists(_CUDA_LIB_CU), f"CUDA lib source not found: {_CUDA_LIB_CU}")
+class TestParseCudaLibCu(ExtTestCase):
+    """Unit tests for the CUDA lib .cu domain parser."""
+
+    def test_returns_correct_domain(self):
+        from yaourt.ortops.doc import _parse_cuda_lib_cu
+
+        domain = _parse_cuda_lib_cu(_CUDA_LIB_CU)
+        self.assertEqual(domain, "yaourt.ortops.fused_kernel.cuda")
+
+    def test_missing_file_raises(self):
+        from yaourt.ortops.doc import _parse_cuda_lib_cu
+
+        with self.assertRaises(OSError):
+            _parse_cuda_lib_cu("/nonexistent/path.cu")
+
+
+@unittest.skipUnless(os.path.isdir(_CUDA_DIR), f"CUDA source dir not found: {_CUDA_DIR}")
+class TestParseCudaKernelCu(ExtTestCase):
+    """Unit tests for the CUDA kernel .cu parser."""
+
+    def test_addmul_cu_returns_two_op_names(self):
+        from yaourt.ortops.doc import _parse_cuda_kernel_cu
+
+        cu_path = os.path.join(_CUDA_DIR, "addmul.cu")
+        op_names, n_in, n_out, ep = _parse_cuda_kernel_cu(cu_path)
+        self.assertIn("AddMul", op_names)
+        self.assertIn("MulAdd", op_names)
+        self.assertEqual(n_in, 3)
+        self.assertEqual(n_out, 1)
+        self.assertEqual(ep, "CUDAExecutionProvider")
+
+    def test_negxplus1_cu_returns_one_op_name(self):
+        from yaourt.ortops.doc import _parse_cuda_kernel_cu
+
+        cu_path = os.path.join(_CUDA_DIR, "negxplus1.cu")
+        op_names, n_in, n_out, _ep = _parse_cuda_kernel_cu(cu_path)
+        self.assertEqual(op_names, ["NegXplus1"])
+        self.assertEqual(n_in, 1)
+        self.assertEqual(n_out, 1)
+
+    def test_transpose_cast_2d_cu_returns_two_op_names(self):
+        from yaourt.ortops.doc import _parse_cuda_kernel_cu
+
+        cu_path = os.path.join(_CUDA_DIR, "transpose_cast_2d.cu")
+        op_names, _, _, _ = _parse_cuda_kernel_cu(cu_path)
+        self.assertIn("Transpose2DCastFP16", op_names)
+        self.assertIn("Transpose2DCastFP32", op_names)
+
+
+@unittest.skipUnless(os.path.isdir(_CUDA_DIR), f"CUDA source dir not found: {_CUDA_DIR}")
+class TestBuildCudaOps(ExtTestCase):
+    """Tests for _build_cuda_ops()."""
+
+    def test_build_finds_expected_ops(self):
+        from yaourt.ortops.doc import _build_cuda_ops
+
+        ops = _build_cuda_ops(cuda_dir=_CUDA_DIR)
+        self.assertIn("AddMul", ops)
+        self.assertIn("NegXplus1", ops)
+        self.assertIn("Rotary", ops)
+
+    def test_returns_empty_when_dir_missing(self):
+        from yaourt.ortops.doc import _build_cuda_ops
+
+        ops = _build_cuda_ops(cuda_dir="/nonexistent/cuda")
+        self.assertEqual(ops, {})
+
+
+@unittest.skipUnless(os.path.isdir(_CUDA_DIR), f"CUDA source dir not found: {_CUDA_DIR}")
+class TestPrintCudaOpsRst(ExtTestCase):
+    """Tests for print_cuda_ops_rst()."""
+
+    def _capture(self) -> str:
+        """Captures stdout from print_cuda_ops_rst() and returns it as a string."""
+        import io
+        from contextlib import redirect_stdout
+
+        from yaourt.ortops.doc import print_cuda_ops_rst
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            print_cuda_ops_rst()
+        return buf.getvalue()
+
+    def test_returns_non_empty_output(self):
+        output = self._capture()
+        self.assertGreater(len(output), 0)
+
+    def test_output_contains_op_names(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        output = self._capture()
+        for op_name in CUDA_OPS:
+            self.assertIn(op_name, output)
+
+    def test_output_contains_list_table_directive(self):
+        output = self._capture()
+        self.assertIn(".. list-table::", output)
+
+    def test_output_contains_domain(self):
+        from yaourt.ortops.doc import CUDA_OPS
+
+        output = self._capture()
+        for op in CUDA_OPS.values():
+            self.assertIn(op.domain, output)
+
+    def test_empty_catalogue_prints_fallback_message(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+
+        from yaourt.ortops import doc as doc_module
+
+        buf = io.StringIO()
+        with patch.object(doc_module, "CUDA_OPS", {}), redirect_stdout(buf):
+            doc_module.print_cuda_ops_rst()
+        self.assertIn("No CUDA ops found", buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -124,5 +124,14 @@ Load the custom C++ operators:
     :caption: Contents
 
     getting_started
+    custom_ops/index
     api/index
     auto_examples/index
+
+.. only:: not ci_build
+
+    .. toctree::
+        :maxdepth: 1
+        :caption: Miscellaneous
+
+        ci_durations
