@@ -1267,6 +1267,97 @@ def statistics_on_file(filename: str) -> Dict[str, Union[int, float, str]]:
     return stat
 
 
+# Onnx tensor types unsupported by numpy and therefore unsupported by
+# ``onnxruntime.OrtValue.numpy`` and the regular ``InferenceSession.run``.
+# They must go through ``io_binding`` and be read back from the raw buffer.
+_NUMPY_UNSUPPORTED_ONNX_TYPES = frozenset(
+    {
+        16,  # BFLOAT16
+        17,  # FLOAT8E4M3FN
+        18,  # FLOAT8E4M3FNUZ
+        19,  # FLOAT8E5M2
+        20,  # FLOAT8E5M2FNUZ
+        21,  # UINT4
+        22,  # INT4
+        23,  # FLOAT4E2M1
+    }
+)
+
+
+class InferenceSessionRunner:
+    """Wraps an :class:`onnxruntime.InferenceSession` and runs it through
+    ``io_binding`` so that tensors with a type unsupported by numpy (such as
+    ``bfloat16``) can be used as inputs or outputs.
+
+    The wrapper delegates every attribute except :meth:`run` to the underlying
+    session.
+
+    Args:
+        session: The wrapped :class:`onnxruntime.InferenceSession`.
+        device_type: Device holding the input buffers, ``"cpu"`` by default.
+        device_id: Device identifier, ``0`` by default.
+    """
+
+    def __init__(self, session: Any, device_type: str = "cpu", device_id: int = 0):
+        self.session = session
+        self.device_type = device_type
+        self.device_id = device_id
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.session, name)
+
+    @staticmethod
+    def _ortvalue_to_numpy(ortvalue: Any) -> numpy.ndarray:
+        """Converts an ``OrtValue`` to a :class:`numpy.ndarray`, including
+        types unsupported by numpy such as ``bfloat16``.
+        """
+        import ctypes
+
+        from onnx.helper import tensor_dtype_to_np_dtype
+
+        onnx_type = ortvalue.element_type()
+        if onnx_type not in _NUMPY_UNSUPPORTED_ONNX_TYPES:
+            return ortvalue.numpy()
+
+        shape = tuple(ortvalue.shape())
+        np_dtype = tensor_dtype_to_np_dtype(onnx_type)
+        size = int(numpy.prod(shape, dtype=numpy.int64)) if shape else 1
+        n_bytes = size * numpy.dtype(np_dtype).itemsize
+        buffer = (ctypes.c_byte * n_bytes).from_address(ortvalue.data_ptr())
+        return numpy.frombuffer(bytes(buffer), dtype=np_dtype).reshape(shape)
+
+    def run(
+        self,
+        output_names: Optional[Sequence[str]],
+        input_feed: Dict[str, numpy.ndarray],
+        run_options: Any = None,
+    ) -> List[numpy.ndarray]:
+        """Runs the model through ``io_binding`` and returns the outputs as
+        numpy arrays, supporting types unsupported by numpy such as
+        ``bfloat16``.
+        """
+        from onnx.helper import np_dtype_to_tensor_dtype
+
+        if output_names is None:
+            output_names = [o.name for o in self.session.get_outputs()]
+
+        binding = self.session.io_binding()
+        # Hold references to the contiguous arrays backing the bound buffers
+        # so that they stay alive until the run completes.
+        references = []
+        for name, value in input_feed.items():
+            array = numpy.ascontiguousarray(value)
+            references.append(array)
+            onnx_type = int(np_dtype_to_tensor_dtype(array.dtype))
+            binding.bind_input(
+                name, self.device_type, self.device_id, onnx_type, array.shape, array.ctypes.data
+            )
+        for name in output_names:
+            binding.bind_output(name, "cpu")
+        self.session.run_with_iobinding(binding, run_options)
+        return [self._ortvalue_to_numpy(o) for o in binding.get_outputs()]
+
+
 class ExtTestCase(unittest.TestCase):
     """
     Inherits from :class:`unittest.TestCase` and adds specific comprison
@@ -1688,9 +1779,69 @@ class ExtTestCase(unittest.TestCase):
         )
 
     def make_inference_session(
-        self, onx: Union["onnx.ModelProto", str], cpu: bool = True  # noqa: F821
-    ) -> "onnxruntime.InferenceSession":  # noqa: F821
-        return self._check_with_ort(onx, cpu=cpu)
+        self,
+        onx: Union["onnx.ModelProto", str, bytes],  # noqa: F821
+        providers: Optional[Sequence[str]] = None,
+        cpu: bool = True,
+        custom_ops_library: Optional[str] = None,
+        check_providers: bool = True,
+    ) -> InferenceSessionRunner:
+        """Creates an inference session for a model.
+
+        This is the single helper used by the unit tests to build an
+        :class:`onnxruntime.InferenceSession`. The returned object relies on
+        ``io_binding`` in its ``run`` method so that tensors with a type
+        unsupported by numpy (such as ``bfloat16``) can be used as inputs or
+        outputs.
+
+        Args:
+            onx: A :class:`onnx.ModelProto`, an
+                :class:`yaourt.container.export_artifact.ExportArtifact`, a
+                filename or the serialized model as bytes.
+            providers: The execution providers to use. When ``None``, they are
+                derived from ``cpu``.
+            cpu: When ``providers`` is ``None``, restricts execution to the CPU
+                provider unless ``cpu`` is ``False`` and
+                ``CUDAExecutionProvider`` is available.
+            custom_ops_library: Optional path to a shared library implementing
+                custom operators to register.
+            check_providers: When ``True``, asserts that every requested
+                provider is active in the created session.
+
+        Returns:
+            An :class:`InferenceSessionRunner` wrapping the session.
+        """
+        from onnxruntime import InferenceSession, SessionOptions, get_available_providers
+
+        try:
+            from .container.export_artifact import ExportArtifact
+        except ImportError:
+            ExportArtifact = None
+
+        if ExportArtifact is not None and isinstance(onx, ExportArtifact):
+            onx = onx.proto
+
+        if providers is None:
+            providers = ["CPUExecutionProvider"]
+            if not cpu and "CUDAExecutionProvider" in get_available_providers():
+                providers.insert(0, "CUDAExecutionProvider")
+
+        sess_options = None
+        if custom_ops_library is not None:
+            self.assertExists(custom_ops_library)
+            sess_options = SessionOptions()
+            sess_options.register_custom_ops_library(custom_ops_library)
+
+        session = InferenceSession(
+            onx.SerializeToString() if hasattr(onx, "SerializeToString") else onx,
+            sess_options=sess_options,
+            providers=list(providers),
+        )
+        if check_providers:
+            available = session.get_providers()
+            for provider in providers:
+                self.assertIn(provider, available)
+        return InferenceSessionRunner(session)
 
     def assertRaise(
         self,

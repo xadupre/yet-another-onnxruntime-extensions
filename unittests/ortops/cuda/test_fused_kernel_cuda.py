@@ -42,16 +42,11 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def _make_inference_session(self, model_bytes: bytes):
         """Creates an OrtInferenceSession with the custom op library loaded (CUDA EP)."""
-        import onnxruntime as ort
-
-        self.assertExists(_LIB_PATH)
         self.assertIn("cuda", _LIB_PATH)
-        so = ort.SessionOptions()
-        so.register_custom_ops_library(_LIB_PATH)
-        return ort.InferenceSession(
+        return self.make_inference_session(
             model_bytes,
-            sess_options=so,
             providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+            custom_ops_library=_LIB_PATH,
         )
 
     def _make_unary_model(self, op_name: str, dtype_onnx: int, shape, **kwargs) -> bytes:
