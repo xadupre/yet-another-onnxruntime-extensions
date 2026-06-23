@@ -29,17 +29,9 @@ class TestMixedOnnxAndContribOpsCuda(ExtTestCase):
             AssertionError: If ORT falls back to CPU and does not use
                 ``CUDAExecutionProvider``.
         """
-        import onnxruntime as ort
-
-        sess = ort.InferenceSession(
+        return self.make_inference_session(
             model_bytes, providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
         )
-        self.assertIn(
-            "CUDAExecutionProvider",
-            sess.get_providers(),
-            "ORT fell back to CPU-only execution; CUDAExecutionProvider is not active.",
-        )
-        return sess
 
     @staticmethod
     def _gelu_ref(x: numpy.ndarray) -> numpy.ndarray:

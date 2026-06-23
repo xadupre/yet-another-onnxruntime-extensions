@@ -11,6 +11,8 @@ import platform
 import unittest
 
 import numpy
+import onnx
+import onnx.helper as oh
 
 from yaourt.ext_test_case import ExtTestCase, requires_cuda_onnxruntime, requires_onnxruntime
 
@@ -42,22 +44,15 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def _make_inference_session(self, model_bytes: bytes):
         """Creates an OrtInferenceSession with the custom op library loaded (CUDA EP)."""
-        import onnxruntime as ort
-
-        self.assertExists(_LIB_PATH)
         self.assertIn("cuda", _LIB_PATH)
-        so = ort.SessionOptions()
-        so.register_custom_ops_library(_LIB_PATH)
-        return ort.InferenceSession(
+        return self.make_inference_session(
             model_bytes,
-            sess_options=so,
             providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+            custom_ops_library=_LIB_PATH,
         )
 
     def _make_unary_model(self, op_name: str, dtype_onnx: int, shape, **kwargs) -> bytes:
         """Builds an ONNX model with a single custom unary op."""
-        import onnx.helper as oh
-
         X = oh.make_tensor_value_info("X", dtype_onnx, list(shape))
         Y = oh.make_tensor_value_info("Y", dtype_onnx, list(shape))
         node = oh.make_node(op_name, inputs=["X"], outputs=["Y"], domain=_OP_DOMAIN, **kwargs)
@@ -72,8 +67,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, op_name: str, dtype_onnx: int, shape_a, shape_b, **kwargs
     ) -> bytes:
         """Builds an ONNX model with a single custom binary op."""
-        import onnx.helper as oh
-
         X = oh.make_tensor_value_info("X", dtype_onnx, list(shape_a))
         Y_in = oh.make_tensor_value_info("Y", dtype_onnx, list(shape_b))
         Z = oh.make_tensor_value_info("Z", dtype_onnx, None)
@@ -91,8 +84,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, op_name: str, dtype_onnx: int, shape_a, shape_b, shape_c, **kwargs
     ) -> bytes:
         """Builds an ONNX model with a single custom ternary op."""
-        import onnx.helper as oh
-
         A = oh.make_tensor_value_info("A", dtype_onnx, list(shape_a))
         B = oh.make_tensor_value_info("B", dtype_onnx, list(shape_b))
         C = oh.make_tensor_value_info("C", dtype_onnx, list(shape_c))
@@ -111,8 +102,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, op_name: str, dtype_onnx: int, shape_a, shape_b, shape_c, shape_d, **kwargs
     ) -> bytes:
         """Builds an ONNX model with a single custom 4-input op."""
-        import onnx.helper as oh
-
         A = oh.make_tensor_value_info("A", dtype_onnx, list(shape_a))
         B = oh.make_tensor_value_info("B", dtype_onnx, list(shape_b))
         C = oh.make_tensor_value_info("C", dtype_onnx, list(shape_c))
@@ -132,8 +121,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, op_name: str, dtype_onnx: int, shape_a, shape_b, shape_c, **kwargs
     ) -> bytes:
         """Builds an ONNX model for AddSharedInput/MulSharedInput (3 in, 2 out)."""
-        import onnx.helper as oh
-
         A = oh.make_tensor_value_info("A", dtype_onnx, list(shape_a))
         B = oh.make_tensor_value_info("B", dtype_onnx, list(shape_b))
         C = oh.make_tensor_value_info("C", dtype_onnx, list(shape_c))
@@ -156,9 +143,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def _make_rotary_model(self, dtype_onnx: int, shape, side: str) -> bytes:
         """Builds an ONNX model for the Rotary op."""
-        import onnx
-        import onnx.helper as oh
-
         X = oh.make_tensor_value_info("X", dtype_onnx, list(shape))
         splits = oh.make_tensor_value_info("splits", onnx.TensorProto.INT64, [2])
         Y = oh.make_tensor_value_info("Y", dtype_onnx, list(shape))
@@ -176,9 +160,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, dtype_onnx: int, indices_shape, updates_shape, **kwargs
     ) -> bytes:
         """Builds an ONNX model for the ScatterNDOfShape op."""
-        import onnx
-        import onnx.helper as oh
-
         shape_in = oh.make_tensor_value_info("shape", onnx.TensorProto.INT64, [None])
         indices = oh.make_tensor_value_info(
             "indices", onnx.TensorProto.INT64, list(indices_shape)
@@ -204,9 +185,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, dtype_onnx: int, indices_shape, updates_shape, masked_value: int = -1
     ) -> bytes:
         """Builds an ONNX model for the MaskedScatterNDOfShape op."""
-        import onnx
-        import onnx.helper as oh
-
         shape_in = oh.make_tensor_value_info("shape", onnx.TensorProto.INT64, [None])
         indices = oh.make_tensor_value_info(
             "indices", onnx.TensorProto.INT64, list(indices_shape)
@@ -234,8 +212,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         self, op_name: str, input_dtype_onnx: int, output_dtype_onnx: int, shape
     ) -> bytes:
         """Builds an ONNX model for Transpose2DCastFP16/Transpose2DCastFP32."""
-        import onnx.helper as oh
-
         X = oh.make_tensor_value_info("X", input_dtype_onnx, list(shape))
         Y = oh.make_tensor_value_info("Y", output_dtype_onnx, None)
         node = oh.make_node(op_name, inputs=["X"], outputs=["Y"], domain=_OP_DOMAIN)
@@ -248,9 +224,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def _make_tri_matrix_model(self, dtype_onnx: int) -> bytes:
         """Builds an ONNX model for the TriMatrix op."""
-        import onnx
-        import onnx.helper as oh
-
         shape_in = oh.make_tensor_value_info("shape", onnx.TensorProto.INT64, [2])
         csts = oh.make_tensor_value_info("csts", dtype_onnx, [3])
         Y = oh.make_tensor_value_info("Y", dtype_onnx, None)
@@ -270,8 +243,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_negxplus1_float32(self):
         """NegXplus1 computes 1 - x correctly for float32."""
-        import onnx
-
         shape = (4, 8)
         model = self._make_unary_model("NegXplus1", onnx.TensorProto.FLOAT, shape)
         sess = self._make_inference_session(model)
@@ -282,8 +253,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_replace_zero_float32(self):
         """ReplaceZero replaces zero entries with the given scalar."""
-        import onnx
-
         shape = (2, 3)
         model = self._make_unary_model("ReplaceZero", onnx.TensorProto.FLOAT, shape, by=7.0)
         sess = self._make_inference_session(model)
@@ -295,8 +264,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mul_sigmoid_float32(self):
         """MulSigmoid computes x * sigmoid(x) (Swish activation)."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_unary_model("MulSigmoid", onnx.TensorProto.FLOAT, shape)
         sess = self._make_inference_session(model)
@@ -310,8 +277,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_addmul_float32(self):
         """AddMul computes (A + B) * C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("AddMul", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -325,8 +290,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_muladd_float32(self):
         """MulAdd computes A * B + C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("MulAdd", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -340,8 +303,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_submul_float32(self):
         """SubMul computes (A - B) * C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("SubMul", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -355,8 +316,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mulsub_float32(self):
         """MulSub computes A * B - C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("MulSub", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -370,8 +329,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mul_mul_sigmoid_float32(self):
         """MulMulSigmoid computes x * y * sigmoid(y) element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_binary_model("MulMulSigmoid", onnx.TensorProto.FLOAT, shape, shape)
         sess = self._make_inference_session(model)
@@ -386,8 +343,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_addadd_float32(self):
         """AddAdd computes A + B + C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -401,8 +356,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mulmul_float32(self):
         """MulMul computes A * B * C element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_ternary_model("MulMul", onnx.TensorProto.FLOAT, shape, shape, shape)
         sess = self._make_inference_session(model)
@@ -416,8 +369,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_addaddadd_float32(self):
         """AddAddAdd computes A + B + C + D element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_quaternary_model(
             "AddAddAdd", onnx.TensorProto.FLOAT, shape, shape, shape, shape
@@ -434,8 +385,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mulmulmul_float32(self):
         """MulMulMul computes A * B * C * D element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_quaternary_model(
             "MulMulMul", onnx.TensorProto.FLOAT, shape, shape, shape, shape
@@ -452,8 +401,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_add_shared_input_float32(self):
         """AddSharedInput computes (A+B, A+C) as two outputs element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_shared_input_model(
             "AddSharedInput", onnx.TensorProto.FLOAT, shape, shape, shape
@@ -470,8 +417,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_mul_shared_input_float32(self):
         """MulSharedInput computes (A*B, A*C) as two outputs element-wise."""
-        import onnx
-
         shape = (4, 4)
         model = self._make_shared_input_model(
             "MulSharedInput", onnx.TensorProto.FLOAT, shape, shape, shape
@@ -488,8 +433,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_rotary_left_float32(self):
         """Rotary left swaps halves: left_out=right_in, right_out=-left_in."""
-        import onnx
-
         shape = (3, 2, 3, 4)
         model = self._make_rotary_model(onnx.TensorProto.FLOAT, shape, "left")
         sess = self._make_inference_session(model)
@@ -507,8 +450,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_rotary_right_float32(self):
         """Rotary right swaps halves: left_out=-right_in, right_out=left_in."""
-        import onnx
-
         shape = (3, 2, 3, 4)
         model = self._make_rotary_model(onnx.TensorProto.FLOAT, shape, "right")
         sess = self._make_inference_session(model)
@@ -526,8 +467,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_scatter_nd_of_shape_float32(self):
         """ScatterNDOfShape performs scatter-add into a zero tensor of given shape."""
-        import onnx
-
         output_shape = numpy.array([4, 6], dtype=numpy.int64)
         indices = numpy.array([[0], [1], [2], [0]], dtype=numpy.int64)
         updates = numpy.ones((4, 6), dtype=numpy.float32)
@@ -545,8 +484,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_masked_scatter_nd_of_shape_float32(self):
         """MaskedScatterNDOfShape skips scatter-add for masked index value (-1)."""
-        import onnx
-
         output_shape = numpy.array([8, 4], dtype=numpy.int64)
         indices = numpy.array([[[0]], [[1]], [[-1]], [[2]], [[-1]], [[3]]], dtype=numpy.int64)
         updates = numpy.ones((6, 1, 4), dtype=numpy.float32)
@@ -566,8 +503,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_transpose2d_cast_fp16(self):
         """Transpose2DCastFP16 transposes a float32 2D matrix and casts to float16."""
-        import onnx
-
         shape = (32, 96)
         model = self._make_transpose_cast_model(
             "Transpose2DCastFP16", onnx.TensorProto.FLOAT, onnx.TensorProto.FLOAT16, shape
@@ -584,8 +519,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_transpose2d_cast_fp32(self):
         """Transpose2DCastFP32 transposes a float16 2D matrix and casts to float32."""
-        import onnx
-
         shape = (32, 96)
         model = self._make_transpose_cast_model(
             "Transpose2DCastFP32", onnx.TensorProto.FLOAT16, onnx.TensorProto.FLOAT, shape
@@ -602,8 +535,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
 
     def test_tri_matrix_float32(self):
         """TriMatrix fills a 2D matrix with lower/diag/upper scalar constants."""
-        import onnx
-
         shape = numpy.array([6, 6], dtype=numpy.int64)
         csts = numpy.array([2.0, 3.0, 4.0], dtype=numpy.float32)
         model = self._make_tri_matrix_model(onnx.TensorProto.FLOAT)

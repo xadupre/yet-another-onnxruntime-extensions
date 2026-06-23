@@ -42,13 +42,7 @@ class TestMulMulCpuOp(ExtTestCase):
 
     def _make_inference_session(self, model_bytes: bytes):
         """Creates an OrtInferenceSession with the custom op library loaded (CPU EP)."""
-        import onnxruntime as ort
-
-        so = ort.SessionOptions()
-        so.register_custom_ops_library(_LIB_PATH)
-        return ort.InferenceSession(
-            model_bytes, sess_options=so, providers=["CPUExecutionProvider"]
-        )
+        return self.make_inference_session(model_bytes, custom_ops_library=_LIB_PATH)
 
     def _make_ternary_model(
         self, op_name: str, dtype_onnx: int, shape_a, shape_b, shape_c
