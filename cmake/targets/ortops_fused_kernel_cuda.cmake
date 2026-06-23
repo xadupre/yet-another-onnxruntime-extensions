@@ -58,14 +58,11 @@ target_compile_definitions(
 target_link_libraries(
   ortops_fused_kernel_cuda
   PRIVATE
-  common
-  cublas
-  cublasLt)
+  common)
 
 set_property(TARGET ortops_fused_kernel_cuda PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_target_properties(ortops_fused_kernel_cuda PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(ortops_fused_kernel_cuda PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
-set_target_properties(ortops_fused_kernel_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Copy the shared library to the yaourt/ortops/fused_kernel/cuda folder after build
 add_custom_command(

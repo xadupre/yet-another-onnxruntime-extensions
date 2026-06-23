@@ -611,5 +611,57 @@ class TestEqualArrayAny(ExtTestCase):
             self.assertEqualArrayAny(object(), object())
 
 
+@requires_onnxruntime("1.18")
+class TestMakeInferenceSession(ExtTestCase):
+    @staticmethod
+    def _identity_model(onnx_type: int):
+        import onnx.helper as oh
+
+        X = oh.make_tensor_value_info("X", onnx_type, [None, None])
+        Y = oh.make_tensor_value_info("Y", onnx_type, [None, None])
+        graph = oh.make_graph([oh.make_node("Identity", ["X"], ["Y"])], "g", [X], [Y])
+        model = oh.make_model(graph, opset_imports=[oh.make_opsetid("", 18)])
+        model.ir_version = 8
+        return model
+
+    def test_make_inference_session_float32(self):
+        import onnx
+
+        sess = self.make_inference_session(self._identity_model(onnx.TensorProto.FLOAT))
+        x = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
+        (y,) = sess.run(None, {"X": x})
+        self.assertEqual(y.dtype, np.float32)
+        self.assertEqualArray(x, y)
+
+    def test_make_inference_session_int64(self):
+        import onnx
+
+        sess = self.make_inference_session(self._identity_model(onnx.TensorProto.INT64))
+        x = np.array([[1, 2], [3, 4]], dtype=np.int64)
+        (y,) = sess.run(None, {"X": x})
+        self.assertEqual(y.dtype, np.int64)
+        self.assertEqualArray(x, y)
+
+    def test_make_inference_session_bfloat16(self):
+        import ml_dtypes
+        import onnx
+
+        sess = self.make_inference_session(self._identity_model(onnx.TensorProto.BFLOAT16))
+        x = np.array([[1, 2, 3], [4, 5, 6]], dtype=ml_dtypes.bfloat16)
+        (y,) = sess.run(None, {"X": x})
+        self.assertEqual(y.dtype, ml_dtypes.bfloat16)
+        self.assertEqual(y.shape, x.shape)
+        self.assertEqualArray(x.astype(np.float32), y.astype(np.float32))
+
+    def test_make_inference_session_check_providers(self):
+        import onnx
+
+        with self.assertRaises(AssertionError):
+            self.make_inference_session(
+                self._identity_model(onnx.TensorProto.FLOAT),
+                providers=["NotARealExecutionProvider", "CPUExecutionProvider"],
+            )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

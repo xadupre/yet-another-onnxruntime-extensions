@@ -5,6 +5,8 @@ from onnx.defs import get_schema
 from onnx.reference import ReferenceEvaluator
 from onnx.reference.op_run import OpRun
 
+from yaourt.ortops.fused_kernel.reference_ops import ALL_OPS as _FUSED_KERNEL_OPS
+
 
 class ExtendedReferenceEvaluator(ReferenceEvaluator):
     """
@@ -147,15 +149,51 @@ class ExtendedReferenceEvaluator(ReferenceEvaluator):
 
     The class overloads or adds the following operators by default:
 
-    .. code-block:: python
+    .. runpython::
+        :showcode:
 
         import pprint
         from yaourt.reference import ExtendedReferenceEvaluator
 
         pprint.pprint(ExtendedReferenceEvaluator.default_ops)
+
+    By default, :attr:`default_ops` is pre-populated with reference kernels for
+    every operator in the ``yaourt.ortops.fused_kernel.cuda`` domain (see
+    :mod:`yaourt.ortops.fused_kernel.reference_ops`).  This means that any
+    model using the fused-kernel CUDA custom ops can be evaluated on CPU without
+    a GPU or the compiled CUDA shared library — no ``new_ops`` argument is
+    required:
+
+    .. runpython::
+        :showcode:
+
+        import numpy as np
+        import onnx.helper as oh
+        import onnx
+        from yaourt.reference import ExtendedReferenceEvaluator
+
+        TFLOAT = onnx.TensorProto.FLOAT
+        model = oh.make_model(
+            oh.make_graph(
+                [oh.make_node("MulMul", ["A", "B", "C"], ["Z"],
+                              domain="yaourt.ortops.fused_kernel.cuda")],
+                "mulmul_graph",
+                [oh.make_tensor_value_info(n, TFLOAT, [None]) for n in "ABC"],
+                [oh.make_tensor_value_info("Z", TFLOAT, [None])],
+            ),
+            opset_imports=[oh.make_opsetid("", 18),
+                           oh.make_opsetid("yaourt.ortops.fused_kernel.cuda", 1)],
+            ir_version=10,
+        )
+        ref = ExtendedReferenceEvaluator(model)
+        a = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        b = np.array([4.0, 5.0, 6.0], dtype=np.float32)
+        c = np.array([7.0, 8.0, 9.0], dtype=np.float32)
+        (result,) = ref.run(None, {"A": a, "B": b, "C": c})
+        print(result)
     """
 
-    default_ops: List[type[OpRun]] = []
+    default_ops: List[type[OpRun]] = list(_FUSED_KERNEL_OPS)
 
     @staticmethod
     def filter_ops(
