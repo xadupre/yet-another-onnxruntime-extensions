@@ -19,6 +19,7 @@ from .doc import (
     print_fused_kernel_cpu_ops,
     print_fused_kernel_cpu_ops_rst,
 )
+from .cpu_features import cpu_supports_avx2, cpu_supports_f16c
 
 __all__ = [
     "CPU_OPS",
@@ -31,6 +32,8 @@ __all__ = [
     "OrtOpDesc",
     "OrtOpInput",
     "OrtOpOutput",
+    "cpu_supports_avx2",
+    "cpu_supports_f16c",
     "get_ort_ext_libs",
     "print_cpu_ops",
     "print_cpu_ops_rst",
