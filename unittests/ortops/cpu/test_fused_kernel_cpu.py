@@ -35,6 +35,9 @@ def _lib_available() -> bool:
     return os.path.exists(_LIB_PATH)
 
 
+_BFLOAT16_DTYPE = ExtTestCase.get_bfloat16_dtype()
+
+
 @unittest.skipUnless(_lib_available(), f"CPU custom op library not found at {_LIB_PATH!r}")
 @requires_onnxruntime("1.18")
 class TestMulMulCpuOp(ExtTestCase):
@@ -63,7 +66,69 @@ class TestMulMulCpuOp(ExtTestCase):
         return model.SerializeToString()
 
     # ------------------------------------------------------------------
-    # Basic correctness tests
+    # AddAdd correctness tests
+    # ------------------------------------------------------------------
+
+    def test_addadd_float32_same_shape(self):
+        """AddAdd computes A + B + C element-wise for equal-shape inputs."""
+        import onnx
+
+        shape = (4, 4)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(101)
+        a = rng.standard_normal(shape).astype(numpy.float32)
+        b = rng.standard_normal(shape).astype(numpy.float32)
+        c = rng.standard_normal(shape).astype(numpy.float32)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        numpy.testing.assert_allclose(z, a + b + c, rtol=1e-5)
+
+    def test_addadd_float16_same_shape(self):
+        """AddAdd computes A + B + C element-wise for float16."""
+        import onnx
+
+        shape = (17, 9)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT16, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(102)
+        a = rng.standard_normal(shape).astype(numpy.float16)
+        b = rng.standard_normal(shape).astype(numpy.float16)
+        c = rng.standard_normal(shape).astype(numpy.float16)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        numpy.testing.assert_allclose(
+            z.astype(numpy.float32),
+            (a.astype(numpy.float32) + b.astype(numpy.float32) + c.astype(numpy.float32)),
+            rtol=5e-3,
+            atol=5e-3,
+        )
+
+    @unittest.skipUnless(
+        _BFLOAT16_DTYPE is not None, "numpy-compatible bfloat16 dtype is required"
+    )
+    def test_addadd_bfloat16_same_shape(self):
+        """AddAdd computes A + B + C element-wise for bfloat16."""
+        import onnx
+
+        shape = (7, 11)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.BFLOAT16, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(103)
+        a = self.to_bfloat16(rng.standard_normal(shape))
+        b = self.to_bfloat16(rng.standard_normal(shape))
+        c = self.to_bfloat16(rng.standard_normal(shape))
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        self.assertBFloat16AllClose(
+            z,
+            self.to_bfloat16(
+                a.astype(numpy.float32) + b.astype(numpy.float32) + c.astype(numpy.float32)
+            ),
+        )
+
+    # ------------------------------------------------------------------
+    # MulMul correctness tests
     # ------------------------------------------------------------------
 
     def test_mulmul_float32_same_shape(self):

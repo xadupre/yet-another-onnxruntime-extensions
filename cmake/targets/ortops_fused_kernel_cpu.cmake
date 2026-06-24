@@ -1,5 +1,5 @@
 #
-# module: yaourt.ortops.fused_kernel.cpu (MulMul - optimised CPU kernel)
+# module: yaourt.ortops.fused_kernel.cpu (AddAdd/MulMul - optimised CPU kernels)
 #
 message(STATUS "+ KERNEL yaourt.ortops.fused_kernel.cpu")
 
@@ -7,7 +7,8 @@ ort_add_custom_op(
   ortops_fused_kernel_cpu
   "CPU"
   yaourt/ortops/fused_kernel/cpu
-  ../yaourt/ortops/fused_kernel/cpu/ort_fused_kernel_cpu_lib.cc)
+  ../yaourt/ortops/fused_kernel/cpu/ort_fused_kernel_cpu_lib.cc
+  ../yaourt/cpp/cpu_features.cc)
 
 target_include_directories(
   ortops_fused_kernel_cpu
@@ -24,4 +25,3 @@ target_link_libraries(ortops_fused_kernel_cpu PRIVATE Threads::Threads)
 
 # AVX2 is already activated globally via -march=native (constants.cmake) on
 # x86_64/AMD64 hosts; no extra per-target flag is required.
-

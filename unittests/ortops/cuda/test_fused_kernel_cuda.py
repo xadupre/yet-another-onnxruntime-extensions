@@ -36,18 +36,7 @@ def _lib_available() -> bool:
     return os.path.exists(_LIB_PATH)
 
 
-def _get_bfloat16_dtype():
-    """Returns the available numpy-compatible bfloat16 dtype, if any."""
-    if hasattr(numpy, "bfloat16"):
-        return numpy.bfloat16
-    try:
-        import ml_dtypes
-    except ImportError:
-        return None
-    return ml_dtypes.bfloat16
-
-
-_BFLOAT16_DTYPE = _get_bfloat16_dtype()
+_BFLOAT16_DTYPE = ExtTestCase.get_bfloat16_dtype()
 
 
 @unittest.skipUnless(_lib_available(), f"CUDA custom op library not found at {_LIB_PATH!r}")
@@ -251,24 +240,6 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         model.ir_version = 8
         return model.SerializeToString()
 
-    def _to_bfloat16(self, value):
-        """Converts an array to bfloat16 through float32.
-
-        Returns:
-            The converted bfloat16 array.
-        """
-        return value.astype(numpy.float32).astype(_BFLOAT16_DTYPE)
-
-    def _assert_bfloat16_allclose(
-        self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
-    ) -> None:
-        """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
-        self.assertEqual(got.dtype, _BFLOAT16_DTYPE)
-        self.assertEqual(expected.dtype, _BFLOAT16_DTYPE)
-        numpy.testing.assert_allclose(
-            got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
-        )
-
     def test_lib_path_exists(self):
         """Sanity check: the library file is present on disk."""
         self.assertTrue(os.path.exists(_LIB_PATH), f"Library not found: {_LIB_PATH}")
@@ -361,15 +332,15 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         shape = (4, 4)
         rng = numpy.random.default_rng(42)
 
-        a = self._to_bfloat16(rng.standard_normal(shape))
-        b = self._to_bfloat16(rng.standard_normal(shape))
-        c = self._to_bfloat16(rng.standard_normal(shape))
-        d = self._to_bfloat16(rng.standard_normal(shape))
+        a = self.to_bfloat16(rng.standard_normal(shape))
+        b = self.to_bfloat16(rng.standard_normal(shape))
+        c = self.to_bfloat16(rng.standard_normal(shape))
+        d = self.to_bfloat16(rng.standard_normal(shape))
 
         # Unary kernels.
         model = self._make_unary_model("ReplaceZero", onnx.TensorProto.BFLOAT16, shape, by=7.0)
         sess = self._make_inference_session(model)
-        x = self._to_bfloat16(
+        x = self.to_bfloat16(
             numpy.array(
                 [
                     [1.0, 0.0, 2.0, 0.0],
@@ -380,19 +351,19 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
             )
         )
         (y,) = sess.run(None, {"X": x})
-        expected = self._to_bfloat16(
+        expected = self.to_bfloat16(
             numpy.where(x.astype(numpy.float32) == 0.0, 7.0, x.astype(numpy.float32))
         )
-        self._assert_bfloat16_allclose(y, expected)
+        self.assertBFloat16AllClose(y, expected)
 
         model = self._make_unary_model("MulSigmoid", onnx.TensorProto.BFLOAT16, shape)
         sess = self._make_inference_session(model)
-        x = self._to_bfloat16(rng.standard_normal(shape))
+        x = self.to_bfloat16(rng.standard_normal(shape))
         (y,) = sess.run(None, {"X": x})
         x32 = x.astype(numpy.float32)
         sigmoid_x = 1.0 / (1.0 + numpy.exp(-x32))
-        expected = self._to_bfloat16(x32 * sigmoid_x)
-        self._assert_bfloat16_allclose(y, expected, rtol=2e-2, atol=2e-2)
+        expected = self.to_bfloat16(x32 * sigmoid_x)
+        self.assertBFloat16AllClose(y, expected, rtol=2e-2, atol=2e-2)
 
         # Ternary kernels.
         ternary_cases = [
@@ -408,12 +379,12 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
             )
             sess = self._make_inference_session(model)
             (z,) = sess.run(None, {"A": a, "B": b, "C": c})
-            expected = self._to_bfloat16(
+            expected = self.to_bfloat16(
                 expected_fn(
                     a.astype(numpy.float32), b.astype(numpy.float32), c.astype(numpy.float32)
                 )
             )
-            self._assert_bfloat16_allclose(z, expected)
+            self.assertBFloat16AllClose(z, expected)
 
         # Quaternary kernels.
         quaternary_cases = [
@@ -426,7 +397,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
             )
             sess = self._make_inference_session(model)
             (z,) = sess.run(None, {"A": a, "B": b, "C": c, "D": d})
-            expected = self._to_bfloat16(
+            expected = self.to_bfloat16(
                 expected_fn(
                     a.astype(numpy.float32),
                     b.astype(numpy.float32),
@@ -434,7 +405,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
                     d.astype(numpy.float32),
                 )
             )
-            self._assert_bfloat16_allclose(z, expected)
+            self.assertBFloat16AllClose(z, expected)
 
         # Shared-input kernels.
         shared_cases = [
@@ -450,8 +421,8 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
             e0, e1 = expected_fn(
                 a.astype(numpy.float32), b.astype(numpy.float32), c.astype(numpy.float32)
             )
-            self._assert_bfloat16_allclose(z0, self._to_bfloat16(e0))
-            self._assert_bfloat16_allclose(z1, self._to_bfloat16(e1))
+            self.assertBFloat16AllClose(z0, self.to_bfloat16(e0))
+            self.assertBFloat16AllClose(z1, self.to_bfloat16(e1))
 
         # Binary kernel.
         model = self._make_binary_model("MulMulSigmoid", onnx.TensorProto.BFLOAT16, shape, shape)
@@ -459,12 +430,12 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         (z,) = sess.run(None, {"X": a, "Y": b})
         b32 = b.astype(numpy.float32)
         sigmoid_b = 1.0 / (1.0 + numpy.exp(-b32))
-        expected = self._to_bfloat16(a.astype(numpy.float32) * b32 * sigmoid_b)
-        self._assert_bfloat16_allclose(z, expected, rtol=2e-2, atol=2e-2)
+        expected = self.to_bfloat16(a.astype(numpy.float32) * b32 * sigmoid_b)
+        self.assertBFloat16AllClose(z, expected, rtol=2e-2, atol=2e-2)
 
         # Rotary kernel.
         rotary_shape = (3, 2, 3, 4)
-        x = self._to_bfloat16(numpy.arange(numpy.prod(rotary_shape)).reshape(rotary_shape) + 1.0)
+        x = self.to_bfloat16(numpy.arange(numpy.prod(rotary_shape)).reshape(rotary_shape) + 1.0)
         half = rotary_shape[-1] // 2
         splits = numpy.array([half, half], dtype=numpy.int64)
         expected_left = x.astype(numpy.float32).copy()
@@ -473,7 +444,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         model = self._make_rotary_model(onnx.TensorProto.BFLOAT16, rotary_shape, "left")
         sess = self._make_inference_session(model)
         (y_left,) = sess.run(None, {"X": x, "splits": splits})
-        self._assert_bfloat16_allclose(y_left, self._to_bfloat16(expected_left))
+        self.assertBFloat16AllClose(y_left, self.to_bfloat16(expected_left))
 
         expected_right = x.astype(numpy.float32).copy()
         expected_right[..., :half] = -x.astype(numpy.float32)[..., half:]
@@ -481,11 +452,11 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         model = self._make_rotary_model(onnx.TensorProto.BFLOAT16, rotary_shape, "right")
         sess = self._make_inference_session(model)
         (y_right,) = sess.run(None, {"X": x, "splits": splits})
-        self._assert_bfloat16_allclose(y_right, self._to_bfloat16(expected_right))
+        self.assertBFloat16AllClose(y_right, self.to_bfloat16(expected_right))
 
         # TriMatrix kernel.
         shape_i64 = numpy.array([6, 6], dtype=numpy.int64)
-        csts = self._to_bfloat16(numpy.array([2.0, 3.0, 4.0], dtype=numpy.float32))
+        csts = self.to_bfloat16(numpy.array([2.0, 3.0, 4.0], dtype=numpy.float32))
         model = self._make_tri_matrix_model(onnx.TensorProto.BFLOAT16)
         sess = self._make_inference_session(model)
         (y,) = sess.run(None, {"shape": shape_i64, "csts": csts})
@@ -496,7 +467,7 @@ class TestFusedKernelCudaCustomOps(ExtTestCase):
         expected[i1 > i2] = 2.0
         expected[i1 == i2] = 3.0
         expected[i1 < i2] = 4.0
-        self._assert_bfloat16_allclose(y, self._to_bfloat16(expected))
+        self.assertBFloat16AllClose(y, self.to_bfloat16(expected))
 
     def test_muladd_float32(self):
         """MulAdd computes A * B + C element-wise."""
