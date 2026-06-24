@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <vector>
 
-#ifdef __AVX2__
+#if defined(__AVX2__) || defined(__AVX512F__)
 #include <immintrin.h>
 #endif
 
@@ -59,9 +59,11 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
                                         const Ort::Custom::Tensor<T> &C,
                                         Ort::Custom::Tensor<T> &output,
                                         bool has_avx2,
-                                        bool has_f16c) {
+                                        bool has_f16c,
+                                        bool has_avx512f) {
   (void)has_avx2;
   (void)has_f16c;
+  (void)has_avx512f;
   const std::vector<int64_t> shapeA = A.Shape();
   const std::vector<int64_t> shapeB = B.Shape();
   const std::vector<int64_t> shapeC = C.Shape();
@@ -108,6 +110,23 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
 
   if (nA == N && nB == N && nC == N) {
     if constexpr (std::is_same_v<T, float>) {
+#ifdef __AVX512F__
+      if (has_avx512f) {
+        parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
+          int64_t i = begin;
+          const int64_t vec_end = end - ((end - begin) % 16);
+          for (; i < vec_end; i += 16) {
+            const __m512 va = _mm512_loadu_ps(pA + i);
+            const __m512 vb = _mm512_loadu_ps(pB + i);
+            const __m512 vc = _mm512_loadu_ps(pC + i);
+            _mm512_storeu_ps(out + i, _mm512_add_ps(_mm512_add_ps(va, vb), vc));
+          }
+          for (; i < end; ++i)
+            out[i] = pA[i] + pB[i] + pC[i];
+        });
+        return Ort::Status{nullptr};
+      }
+#endif
 #ifdef __AVX2__
       if (has_avx2) {
         parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
@@ -176,13 +195,13 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
 
 inline AddAddKernelCpuFloat::AddAddKernelCpuFloat(const OrtApi * /* api */,
                                                   const OrtKernelInfo * /* info */)
-    : has_avx2_(cpu_supports_avx2()) {}
+    : has_avx2_(cpu_supports_avx2()), has_avx512f_(cpu_supports_avx512f()) {}
 
 inline Ort::Status AddAddKernelCpuFloat::Compute(const Ort::Custom::Tensor<float> &A,
                                                  const Ort::Custom::Tensor<float> &B,
                                                  const Ort::Custom::Tensor<float> &C,
                                                  Ort::Custom::Tensor<float> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, false);
+  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, false, has_avx512f_);
 }
 
 inline AddAddKernelCpuFloat16::AddAddKernelCpuFloat16(const OrtApi * /* api */,
@@ -193,7 +212,7 @@ inline Ort::Status AddAddKernelCpuFloat16::Compute(const Ort::Custom::Tensor<Flo
                                                    const Ort::Custom::Tensor<Float16> &B,
                                                    const Ort::Custom::Tensor<Float16> &C,
                                                    Ort::Custom::Tensor<Float16> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, has_f16c_);
+  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, has_f16c_, false);
 }
 
 inline AddAddKernelCpuBFloat16::AddAddKernelCpuBFloat16(const OrtApi * /* api */,
@@ -203,7 +222,7 @@ inline Ort::Status AddAddKernelCpuBFloat16::Compute(const Ort::Custom::Tensor<BF
                                                     const Ort::Custom::Tensor<BFloat16> &B,
                                                     const Ort::Custom::Tensor<BFloat16> &C,
                                                     Ort::Custom::Tensor<BFloat16> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output, false, false);
+  return ComputeAddAddCpuImpl(A, B, C, output, false, false, false);
 }
 
 } // namespace ortops
