@@ -1,6 +1,7 @@
 #pragma once
 
 #include "addadd_cpu.h"
+#include "cpu_features.h"
 #include "mulmul_cpu.h"
 
 #include <algorithm>
@@ -14,48 +15,8 @@
 #ifdef __AVX2__
 #include <immintrin.h>
 #endif
-#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
-#include <intrin.h>
-#endif
 
 namespace ortops {
-
-inline bool cpu_supports_avx2() {
-#if defined(__x86_64__) || defined(__i386) || defined(_M_X64) || defined(_M_IX86)
-#if defined(__GNUC__) || defined(__clang__)
-  __builtin_cpu_init();
-  return __builtin_cpu_supports("avx2");
-#elif defined(_MSC_VER)
-  int regs[4] = {0, 0, 0, 0};
-  __cpuidex(regs, 0, 0);
-  if (regs[0] < 7)
-    return false;
-  __cpuidex(regs, 7, 0);
-  return (regs[1] & (1 << 5)) != 0;
-#else
-  return false;
-#endif
-#else
-  return false;
-#endif
-}
-
-inline bool cpu_supports_f16c() {
-#if defined(__x86_64__) || defined(__i386) || defined(_M_X64) || defined(_M_IX86)
-#if defined(__GNUC__) || defined(__clang__)
-  __builtin_cpu_init();
-  return __builtin_cpu_supports("f16c");
-#elif defined(_MSC_VER)
-  int regs[4] = {0, 0, 0, 0};
-  __cpuidex(regs, 1, 0);
-  return (regs[2] & (1 << 29)) != 0;
-#else
-  return false;
-#endif
-#else
-  return false;
-#endif
-}
 
 /**
  * @brief Applies @p fn(begin, end) over @c [0, N) in parallel using
@@ -96,7 +57,11 @@ template <typename T>
 inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
                                         const Ort::Custom::Tensor<T> &B,
                                         const Ort::Custom::Tensor<T> &C,
-                                        Ort::Custom::Tensor<T> &output) {
+                                        Ort::Custom::Tensor<T> &output,
+                                        bool has_avx2,
+                                        bool has_f16c) {
+  (void)has_avx2;
+  (void)has_f16c;
   const std::vector<int64_t> shapeA = A.Shape();
   const std::vector<int64_t> shapeB = B.Shape();
   const std::vector<int64_t> shapeC = C.Shape();
@@ -142,8 +107,6 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
   const T *pC = C.Data();
 
   if (nA == N && nB == N && nC == N) {
-    static const bool has_avx2 = cpu_supports_avx2();
-    static const bool has_f16c = cpu_supports_f16c();
     if constexpr (std::is_same_v<T, float>) {
 #ifdef __AVX2__
       if (has_avx2) {
@@ -212,23 +175,25 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
 }
 
 inline AddAddKernelCpuFloat::AddAddKernelCpuFloat(const OrtApi * /* api */,
-                                                  const OrtKernelInfo * /* info */) {}
+                                                  const OrtKernelInfo * /* info */)
+    : has_avx2_(cpu_supports_avx2()) {}
 
 inline Ort::Status AddAddKernelCpuFloat::Compute(const Ort::Custom::Tensor<float> &A,
                                                  const Ort::Custom::Tensor<float> &B,
                                                  const Ort::Custom::Tensor<float> &C,
                                                  Ort::Custom::Tensor<float> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output);
+  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, false);
 }
 
 inline AddAddKernelCpuFloat16::AddAddKernelCpuFloat16(const OrtApi * /* api */,
-                                                      const OrtKernelInfo * /* info */) {}
+                                                      const OrtKernelInfo * /* info */)
+    : has_avx2_(cpu_supports_avx2()), has_f16c_(cpu_supports_f16c()) {}
 
 inline Ort::Status AddAddKernelCpuFloat16::Compute(const Ort::Custom::Tensor<Float16> &A,
                                                    const Ort::Custom::Tensor<Float16> &B,
                                                    const Ort::Custom::Tensor<Float16> &C,
                                                    Ort::Custom::Tensor<Float16> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output);
+  return ComputeAddAddCpuImpl(A, B, C, output, has_avx2_, has_f16c_);
 }
 
 inline AddAddKernelCpuBFloat16::AddAddKernelCpuBFloat16(const OrtApi * /* api */,
@@ -238,7 +203,7 @@ inline Ort::Status AddAddKernelCpuBFloat16::Compute(const Ort::Custom::Tensor<BF
                                                     const Ort::Custom::Tensor<BFloat16> &B,
                                                     const Ort::Custom::Tensor<BFloat16> &C,
                                                     Ort::Custom::Tensor<BFloat16> &output) {
-  return ComputeAddAddCpuImpl(A, B, C, output);
+  return ComputeAddAddCpuImpl(A, B, C, output, false, false);
 }
 
 } // namespace ortops

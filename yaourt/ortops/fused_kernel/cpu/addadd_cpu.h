@@ -26,6 +26,7 @@ using BFloat16 = Ort::BFloat16_t;
  * @brief CPU kernel for the AddAdd operator using float32 tensors.
  */
 struct AddAddKernelCpuFloat {
+  bool has_avx2_;
   AddAddKernelCpuFloat(const OrtApi *api, const OrtKernelInfo *info);
   Ort::Status Compute(const Ort::Custom::Tensor<float> &A,
                       const Ort::Custom::Tensor<float> &B,
@@ -37,6 +38,8 @@ struct AddAddKernelCpuFloat {
  * @brief CPU kernel for the AddAdd operator using float16 tensors.
  */
 struct AddAddKernelCpuFloat16 {
+  bool has_avx2_;
+  bool has_f16c_;
   AddAddKernelCpuFloat16(const OrtApi *api, const OrtKernelInfo *info);
   Ort::Status Compute(const Ort::Custom::Tensor<Float16> &A,
                       const Ort::Custom::Tensor<Float16> &B,

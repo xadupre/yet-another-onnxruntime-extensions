@@ -35,18 +35,7 @@ def _lib_available() -> bool:
     return os.path.exists(_LIB_PATH)
 
 
-def _get_bfloat16_dtype():
-    """Returns the available numpy-compatible bfloat16 dtype, if any."""
-    if hasattr(numpy, "bfloat16"):
-        return numpy.bfloat16
-    try:
-        import ml_dtypes
-    except ImportError:
-        return None
-    return ml_dtypes.bfloat16
-
-
-_BFLOAT16_DTYPE = _get_bfloat16_dtype()
+_BFLOAT16_DTYPE = ExtTestCase.get_bfloat16_dtype()
 
 
 @unittest.skipUnless(_lib_available(), f"CPU custom op library not found at {_LIB_PATH!r}")
@@ -79,24 +68,6 @@ class TestMulMulCpuOp(ExtTestCase):
     # ------------------------------------------------------------------
     # AddAdd correctness tests
     # ------------------------------------------------------------------
-
-    def _to_bfloat16(self, value):
-        """Converts an array to bfloat16 through float32.
-
-        Returns:
-            The converted bfloat16 array.
-        """
-        return value.astype(numpy.float32).astype(_BFLOAT16_DTYPE)
-
-    def _assert_bfloat16_allclose(
-        self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
-    ) -> None:
-        """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
-        self.assertEqual(got.dtype, _BFLOAT16_DTYPE)
-        self.assertEqual(expected.dtype, _BFLOAT16_DTYPE)
-        numpy.testing.assert_allclose(
-            got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
-        )
 
     def test_addadd_float32_same_shape(self):
         """AddAdd computes A + B + C element-wise for equal-shape inputs."""
@@ -145,13 +116,13 @@ class TestMulMulCpuOp(ExtTestCase):
         sess = self._make_inference_session(model)
 
         rng = numpy.random.default_rng(103)
-        a = self._to_bfloat16(rng.standard_normal(shape))
-        b = self._to_bfloat16(rng.standard_normal(shape))
-        c = self._to_bfloat16(rng.standard_normal(shape))
+        a = self.to_bfloat16(rng.standard_normal(shape))
+        b = self.to_bfloat16(rng.standard_normal(shape))
+        c = self.to_bfloat16(rng.standard_normal(shape))
         (z,) = sess.run(None, {"A": a, "B": b, "C": c})
-        self._assert_bfloat16_allclose(
+        self.assertBFloat16AllClose(
             z,
-            self._to_bfloat16(
+            self.to_bfloat16(
                 a.astype(numpy.float32) + b.astype(numpy.float32) + c.astype(numpy.float32)
             ),
         )

@@ -1401,6 +1401,35 @@ class ExtTestCase(unittest.TestCase):
 
         return to_onnx(*args, **kwargs)
 
+    @staticmethod
+    def get_bfloat16_dtype():
+        """Returns the available numpy-compatible bfloat16 dtype, if any."""
+        if hasattr(numpy, "bfloat16"):
+            return numpy.bfloat16
+        try:
+            import ml_dtypes
+        except ImportError:
+            return None
+        return ml_dtypes.bfloat16
+
+    def to_bfloat16(self, value):
+        """Converts an array to bfloat16 through float32."""
+        bfloat16_dtype = self.get_bfloat16_dtype()
+        if bfloat16_dtype is None:
+            raise AssertionError("No numpy-compatible bfloat16 dtype is available.")
+        return value.astype(numpy.float32).astype(bfloat16_dtype)
+
+    def assertBFloat16AllClose(self, got, expected, rtol: float = 1e-2, atol: float = 1e-2):
+        """Compares two bfloat16 arrays through float32 views."""
+        bfloat16_dtype = self.get_bfloat16_dtype()
+        if bfloat16_dtype is None:
+            raise AssertionError("No numpy-compatible bfloat16 dtype is available.")
+        self.assertEqual(got.dtype, bfloat16_dtype)
+        self.assertEqual(expected.dtype, bfloat16_dtype)
+        numpy.testing.assert_allclose(
+            got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
+        )
+
     def print_model(self, model: "ModelProto"):  # noqa: F821
         "Prints a ModelProto"
         import onnx.printer
