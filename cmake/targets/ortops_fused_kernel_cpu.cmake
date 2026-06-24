@@ -8,7 +8,7 @@ ort_add_custom_op(
   "CPU"
   yaourt/ortops/fused_kernel/cpu
   ../yaourt/ortops/fused_kernel/cpu/ort_fused_kernel_cpu_lib.cc
-  ../yaourt/ortops/fused_kernel/cpu/cpu_features.cc)
+  ../yaourt/cpp/cpu_features.cc)
 
 target_include_directories(
   ortops_fused_kernel_cpu
