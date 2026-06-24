@@ -35,6 +35,20 @@ def _lib_available() -> bool:
     return os.path.exists(_LIB_PATH)
 
 
+def _get_bfloat16_dtype():
+    """Returns the available numpy-compatible bfloat16 dtype, if any."""
+    if hasattr(numpy, "bfloat16"):
+        return numpy.bfloat16
+    try:
+        import ml_dtypes
+    except ImportError:
+        return None
+    return ml_dtypes.bfloat16
+
+
+_BFLOAT16_DTYPE = _get_bfloat16_dtype()
+
+
 @unittest.skipUnless(_lib_available(), f"CPU custom op library not found at {_LIB_PATH!r}")
 @requires_onnxruntime("1.18")
 class TestMulMulCpuOp(ExtTestCase):
@@ -63,7 +77,87 @@ class TestMulMulCpuOp(ExtTestCase):
         return model.SerializeToString()
 
     # ------------------------------------------------------------------
-    # Basic correctness tests
+    # AddAdd correctness tests
+    # ------------------------------------------------------------------
+
+    def _to_bfloat16(self, value):
+        """Converts an array to bfloat16 through float32.
+
+        Returns:
+            The converted bfloat16 array.
+        """
+        return value.astype(numpy.float32).astype(_BFLOAT16_DTYPE)
+
+    def _assert_bfloat16_allclose(
+        self, got, expected, rtol: float = 1e-2, atol: float = 1e-2
+    ) -> None:
+        """Compares two arrays using float32 views with bfloat16-friendly tolerances."""
+        self.assertEqual(got.dtype, _BFLOAT16_DTYPE)
+        self.assertEqual(expected.dtype, _BFLOAT16_DTYPE)
+        numpy.testing.assert_allclose(
+            got.astype(numpy.float32), expected.astype(numpy.float32), rtol=rtol, atol=atol
+        )
+
+    def test_addadd_float32_same_shape(self):
+        """AddAdd computes A + B + C element-wise for equal-shape inputs."""
+        import onnx
+
+        shape = (4, 4)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(101)
+        a = rng.standard_normal(shape).astype(numpy.float32)
+        b = rng.standard_normal(shape).astype(numpy.float32)
+        c = rng.standard_normal(shape).astype(numpy.float32)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        numpy.testing.assert_allclose(z, a + b + c, rtol=1e-5)
+
+    def test_addadd_float16_same_shape(self):
+        """AddAdd computes A + B + C element-wise for float16."""
+        import onnx
+
+        shape = (17, 9)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT16, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(102)
+        a = rng.standard_normal(shape).astype(numpy.float16)
+        b = rng.standard_normal(shape).astype(numpy.float16)
+        c = rng.standard_normal(shape).astype(numpy.float16)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        numpy.testing.assert_allclose(
+            z.astype(numpy.float32),
+            (a.astype(numpy.float32) + b.astype(numpy.float32) + c.astype(numpy.float32)),
+            rtol=5e-3,
+            atol=5e-3,
+        )
+
+    @unittest.skipUnless(
+        _BFLOAT16_DTYPE is not None, "numpy-compatible bfloat16 dtype is required"
+    )
+    def test_addadd_bfloat16_same_shape(self):
+        """AddAdd computes A + B + C element-wise for bfloat16."""
+        import onnx
+
+        shape = (7, 11)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.BFLOAT16, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(103)
+        a = self._to_bfloat16(rng.standard_normal(shape))
+        b = self._to_bfloat16(rng.standard_normal(shape))
+        c = self._to_bfloat16(rng.standard_normal(shape))
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        self._assert_bfloat16_allclose(
+            z,
+            self._to_bfloat16(
+                a.astype(numpy.float32) + b.astype(numpy.float32) + c.astype(numpy.float32)
+            ),
+        )
+
+    # ------------------------------------------------------------------
+    # MulMul correctness tests
     # ------------------------------------------------------------------
 
     def test_mulmul_float32_same_shape(self):

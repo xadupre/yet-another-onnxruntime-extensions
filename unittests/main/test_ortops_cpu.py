@@ -346,6 +346,11 @@ class TestFusedKernelCpuOpsCatalogue(ExtTestCase):
 
         self.assertIn("MulMul", FUSED_KERNEL_CPU_OPS)
 
+    def test_fused_kernel_cpu_ops_contains_addadd(self):
+        from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
+
+        self.assertIn("AddAdd", FUSED_KERNEL_CPU_OPS)
+
     def test_fused_kernel_cpu_ops_domain(self):
         from yaourt.ortops.doc import FUSED_KERNEL_CPU_OPS
 
@@ -408,6 +413,7 @@ class TestBuildFusedKernelCpuOps(ExtTestCase):
 
         ops = _build_fused_kernel_cpu_ops(cpu_dir=_FUSED_KERNEL_CPU_DIR)
         self.assertIn("MulMul", ops)
+        self.assertIn("AddAdd", ops)
 
     def test_returns_empty_when_dir_missing(self):
         from yaourt.ortops.doc import _build_fused_kernel_cpu_ops

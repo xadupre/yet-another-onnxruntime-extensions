@@ -2,6 +2,7 @@
 #include <mutex>
 #include <vector>
 
+#include "addadd_cpu.hpp"
 #include "mulmul_cpu.hpp"
 #include "ort_fused_kernel_cpu_lib.h"
 #include "ortapi_version.h"
@@ -21,6 +22,15 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
   Ort::UnownedSessionOptions session_options(options);
 
   // Instances remaining available until onnxruntime unloads the library.
+  static const std::unique_ptr<Ort::Custom::OrtLiteCustomOp> c_AddAddFloat{
+      Ort::Custom::CreateLiteCustomOp<ortops::AddAddKernelCpuFloat>("AddAdd",
+                                                                     "CPUExecutionProvider")};
+  static const std::unique_ptr<Ort::Custom::OrtLiteCustomOp> c_AddAddFloat16{
+      Ort::Custom::CreateLiteCustomOp<ortops::AddAddKernelCpuFloat16>("AddAdd",
+                                                                       "CPUExecutionProvider")};
+  static const std::unique_ptr<Ort::Custom::OrtLiteCustomOp> c_AddAddBFloat16{
+      Ort::Custom::CreateLiteCustomOp<ortops::AddAddKernelCpuBFloat16>("AddAdd",
+                                                                        "CPUExecutionProvider")};
   static const std::unique_ptr<Ort::Custom::OrtLiteCustomOp> c_MulMul{
       Ort::Custom::CreateLiteCustomOp<ortops::MulMulKernelCpu>("MulMul",
                                                                "CPUExecutionProvider")};
@@ -28,6 +38,9 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
   try {
     Ort::CustomOpDomain domain{c_OpDomain};
 
+    domain.Add(c_AddAddFloat.get());
+    domain.Add(c_AddAddFloat16.get());
+    domain.Add(c_AddAddBFloat16.get());
     domain.Add(c_MulMul.get());
 
     session_options.Add(domain);
