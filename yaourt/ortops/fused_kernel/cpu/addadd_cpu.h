@@ -27,6 +27,7 @@ using BFloat16 = Ort::BFloat16_t;
  */
 struct AddAddKernelCpuFloat {
   bool has_avx2_;
+  bool has_avx512f_;
   AddAddKernelCpuFloat(const OrtApi *api, const OrtKernelInfo *info);
   Ort::Status Compute(const Ort::Custom::Tensor<float> &A,
                       const Ort::Custom::Tensor<float> &B,

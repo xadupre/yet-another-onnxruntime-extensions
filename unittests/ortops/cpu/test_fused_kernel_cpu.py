@@ -104,6 +104,21 @@ class TestMulMulCpuOp(ExtTestCase):
             atol=5e-3,
         )
 
+    def test_addadd_float32_non_multiple_of_16(self):
+        """AddAdd is correct when the element count is not a multiple of 16."""
+        import onnx
+
+        shape = (33,)
+        model = self._make_ternary_model("AddAdd", onnx.TensorProto.FLOAT, shape, shape, shape)
+        sess = self._make_inference_session(model)
+
+        rng = numpy.random.default_rng(104)
+        a = rng.standard_normal(shape).astype(numpy.float32)
+        b = rng.standard_normal(shape).astype(numpy.float32)
+        c = rng.standard_normal(shape).astype(numpy.float32)
+        (z,) = sess.run(None, {"A": a, "B": b, "C": c})
+        numpy.testing.assert_allclose(z, a + b + c, rtol=1e-5)
+
     @unittest.skipUnless(
         _BFLOAT16_DTYPE is not None, "numpy-compatible bfloat16 dtype is required"
     )
