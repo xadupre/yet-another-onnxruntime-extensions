@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "addadd_cpu.hpp"
+#include "cpu_features.h"
 #include "mulmul_cpu.hpp"
 #include "ort_fused_kernel_cpu_lib.h"
 #include "ortapi_version.h"
@@ -52,3 +53,7 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
 
   return nullptr;
 }
+
+bool ORT_API_CALL CpuSupportsAvx2() { return ortops::cpu_supports_avx2(); }
+
+bool ORT_API_CALL CpuSupportsF16c() { return ortops::cpu_supports_f16c(); }
