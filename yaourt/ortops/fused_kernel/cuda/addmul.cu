@@ -32,6 +32,16 @@ __device__ __forceinline__ void _addmul_op(half *address, const half a, const ha
 #endif
 }
 
+__device__ __forceinline__ void _addmul_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
+                                            const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
+  *address = __float2bfloat16((__bfloat162float(a) + __bfloat162float(b)) *
+                              __bfloat162float(c));
+#else
+  *address = (a + b) * c;
+#endif
+}
+
 __device__ __forceinline__ void _muladd_op(float *address, const float a, const float b,
                                            const float c) {
   *address = a * b + c;
@@ -41,6 +51,16 @@ __device__ __forceinline__ void _muladd_op(half *address, const half a, const ha
                                            const half c) {
 #if __CUDA_ARCH__ < 700
   *address = __float2half(__half2float(a) * __half2float(b) + __half2float(c));
+#else
+  *address = a * b + c;
+#endif
+}
+
+__device__ __forceinline__ void _muladd_op(__nv_bfloat16 *address, const __nv_bfloat16 a,
+                                            const __nv_bfloat16 b, const __nv_bfloat16 c) {
+#if __CUDA_ARCH__ < 800
+  *address = __float2bfloat16(__bfloat162float(a) * __bfloat162float(b) +
+                              __bfloat162float(c));
 #else
   *address = a * b + c;
 #endif
@@ -281,7 +301,9 @@ void AddMulKernel<T, addition>::Compute(OrtKernelContext *context) {
 
 static AddMulOp<float, true> _addmul32;
 static AddMulOp<half, true> _addmul16;
+static AddMulOp<__nv_bfloat16, true> _addmulbf16;
 static AddMulOp<float, false> _muladd32;
 static AddMulOp<half, false> _muladd16;
+static AddMulOp<__nv_bfloat16, false> _muladdbf16;
 
 } // namespace ortops

@@ -155,5 +155,6 @@ template <typename T> void TriMatrixKernel<T>::Compute(OrtKernelContext *context
 
 static TriMatrixOp<float> _kernel_32;
 static TriMatrixOp<half> _kernel_16;
+static TriMatrixOp<__nv_bfloat16> _kernel_bf16;
 
 } // namespace ortops

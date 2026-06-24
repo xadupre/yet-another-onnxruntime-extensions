@@ -30,6 +30,10 @@ template <> __device__ __inline__ half _exp_typed_ms(const half x) {
 template <> __device__ __inline__ half _exp_typed_ms(const half x) { return hexp(x); }
 #endif
 
+template <> __device__ __inline__ __nv_bfloat16 _exp_typed_ms(const __nv_bfloat16 x) {
+  return __float2bfloat16(expf(__bfloat162float(x)));
+}
+
 template <typename T> __device__ __inline__ T sigmoid_ms(const T a) {
   return a > T(0) ? (T)1 / ((T)1. + _exp_typed_ms<T>(-a))
                   : (T)1 - (T)1 / ((T)1 + _exp_typed_ms<T>(a));
@@ -41,6 +45,10 @@ template <> __device__ __inline__ half sigmoid_ms(const half a) {
 }
 #endif
 
+template <> __device__ __inline__ __nv_bfloat16 sigmoid_ms(const __nv_bfloat16 a) {
+  return __float2bfloat16(sigmoid_ms<float>(__bfloat162float(a)));
+}
+
 template <typename T> __device__ __inline__ T mul_mul_sigmoid(const T x, const T y) {
   return x * y * sigmoid_ms(y);
 }
@@ -51,6 +59,13 @@ template <> __device__ __inline__ half mul_mul_sigmoid(const half x, const half 
   return __float2half(__half2float(x) * hy * sigmoid_ms(hy));
 }
 #endif
+
+template <>
+__device__ __inline__ __nv_bfloat16 mul_mul_sigmoid(const __nv_bfloat16 x,
+                                                     const __nv_bfloat16 y) {
+  float hy = __bfloat162float(y);
+  return __float2bfloat16(__bfloat162float(x) * hy * sigmoid_ms(hy));
+}
 
 template <typename T>
 __global__ void _MulMulSigmoidKernel(T *output_data, const T *px, const T *py, CUDA_LONG N,
@@ -158,5 +173,6 @@ template <typename T> void MulMulSigmoidKernel<T>::Compute(OrtKernelContext *con
 
 static MulMulSigmoidOp<float> _kernel_f32;
 static MulMulSigmoidOp<half> _kernel_f16;
+static MulMulSigmoidOp<__nv_bfloat16> _kernel_bf16;
 
 } // namespace ortops
