@@ -14,8 +14,48 @@
 #ifdef __AVX2__
 #include <immintrin.h>
 #endif
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#include <intrin.h>
+#endif
 
 namespace ortops {
+
+inline bool cpu_supports_avx2() {
+#if defined(__x86_64__) || defined(__i386) || defined(_M_X64) || defined(_M_IX86)
+#if defined(__GNUC__) || defined(__clang__)
+  __builtin_cpu_init();
+  return __builtin_cpu_supports("avx2");
+#elif defined(_MSC_VER)
+  int regs[4] = {0, 0, 0, 0};
+  __cpuidex(regs, 0, 0);
+  if (regs[0] < 7)
+    return false;
+  __cpuidex(regs, 7, 0);
+  return (regs[1] & (1 << 5)) != 0;
+#else
+  return false;
+#endif
+#else
+  return false;
+#endif
+}
+
+inline bool cpu_supports_f16c() {
+#if defined(__x86_64__) || defined(__i386) || defined(_M_X64) || defined(_M_IX86)
+#if defined(__GNUC__) || defined(__clang__)
+  __builtin_cpu_init();
+  return __builtin_cpu_supports("f16c");
+#elif defined(_MSC_VER)
+  int regs[4] = {0, 0, 0, 0};
+  __cpuidex(regs, 1, 0);
+  return (regs[2] & (1 << 29)) != 0;
+#else
+  return false;
+#endif
+#else
+  return false;
+#endif
+}
 
 /**
  * @brief Applies @p fn(begin, end) over @c [0, N) in parallel using
@@ -102,52 +142,58 @@ inline Ort::Status ComputeAddAddCpuImpl(const Ort::Custom::Tensor<T> &A,
   const T *pC = C.Data();
 
   if (nA == N && nB == N && nC == N) {
+    static const bool has_avx2 = cpu_supports_avx2();
+    static const bool has_f16c = cpu_supports_f16c();
     if constexpr (std::is_same_v<T, float>) {
 #ifdef __AVX2__
-      parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
-        int64_t i = begin;
-        const int64_t vec_end = end - ((end - begin) % 8);
-        for (; i < vec_end; i += 8) {
-          const __m256 va = _mm256_loadu_ps(pA + i);
-          const __m256 vb = _mm256_loadu_ps(pB + i);
-          const __m256 vc = _mm256_loadu_ps(pC + i);
-          _mm256_storeu_ps(out + i, _mm256_add_ps(_mm256_add_ps(va, vb), vc));
-        }
-        for (; i < end; ++i)
-          out[i] = pA[i] + pB[i] + pC[i];
-      });
-#else
+      if (has_avx2) {
+        parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
+          int64_t i = begin;
+          const int64_t vec_end = end - ((end - begin) % 8);
+          for (; i < vec_end; i += 8) {
+            const __m256 va = _mm256_loadu_ps(pA + i);
+            const __m256 vb = _mm256_loadu_ps(pB + i);
+            const __m256 vc = _mm256_loadu_ps(pC + i);
+            _mm256_storeu_ps(out + i, _mm256_add_ps(_mm256_add_ps(va, vb), vc));
+          }
+          for (; i < end; ++i)
+            out[i] = pA[i] + pB[i] + pC[i];
+        });
+        return Ort::Status{nullptr};
+      }
+#endif
       parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
         for (int64_t i = begin; i < end; ++i)
           out[i] = pA[i] + pB[i] + pC[i];
       });
-#endif
     } else if constexpr (std::is_same_v<T, Float16>) {
 #if defined(__AVX2__) && defined(__F16C__)
-      parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
-        int64_t i = begin;
-        const int64_t vec_end = end - ((end - begin) % 8);
-        for (; i < vec_end; i += 8) {
-          const __m128i ha = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pA + i));
-          const __m128i hb = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pB + i));
-          const __m128i hc = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pC + i));
-          const __m256 va = _mm256_cvtph_ps(ha);
-          const __m256 vb = _mm256_cvtph_ps(hb);
-          const __m256 vc = _mm256_cvtph_ps(hc);
-          const __m256 sum = _mm256_add_ps(_mm256_add_ps(va, vb), vc);
-          const __m128i hout =
-              _mm256_cvtps_ph(sum, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-          _mm_storeu_si128(reinterpret_cast<__m128i *>(out + i), hout);
-        }
-        for (; i < end; ++i)
-          out[i] = add3_scalar(pA[i], pB[i], pC[i]);
-      });
-#else
+      if (has_avx2 && has_f16c) {
+        parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
+          int64_t i = begin;
+          const int64_t vec_end = end - ((end - begin) % 8);
+          for (; i < vec_end; i += 8) {
+            const __m128i ha = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pA + i));
+            const __m128i hb = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pB + i));
+            const __m128i hc = _mm_loadu_si128(reinterpret_cast<const __m128i *>(pC + i));
+            const __m256 va = _mm256_cvtph_ps(ha);
+            const __m256 vb = _mm256_cvtph_ps(hb);
+            const __m256 vc = _mm256_cvtph_ps(hc);
+            const __m256 sum = _mm256_add_ps(_mm256_add_ps(va, vb), vc);
+            const __m128i hout =
+                _mm256_cvtps_ph(sum, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(out + i), hout);
+          }
+          for (; i < end; ++i)
+            out[i] = add3_scalar(pA[i], pB[i], pC[i]);
+        });
+        return Ort::Status{nullptr};
+      }
+#endif
       parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
         for (int64_t i = begin; i < end; ++i)
           out[i] = add3_scalar(pA[i], pB[i], pC[i]);
       });
-#endif
     } else {
       parallel_for_addadd(N, [&](int64_t begin, int64_t end) {
         for (int64_t i = begin; i < end; ++i)
