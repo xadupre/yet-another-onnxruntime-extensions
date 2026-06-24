@@ -40,6 +40,14 @@ def cpu_supports_avx2() -> bool:
     return bool(func())
 
 
+def cpu_supports_avx512f() -> bool:
+    """Returns whether the running CPU supports AVX512F instructions."""
+    lib = _load_cpu_features_lib()
+    func = lib.CpuSupportsAvx512f
+    func.restype = ctypes.c_bool
+    return bool(func())
+
+
 def cpu_supports_f16c() -> bool:
     """Returns whether the running CPU supports F16C instructions."""
     lib = _load_cpu_features_lib()

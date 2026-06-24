@@ -13,6 +13,7 @@ class TestCpuFeaturesExports(ExtTestCase):
         import yaourt.ortops as m
 
         self.assertIn("cpu_supports_avx2", m.__all__)
+        self.assertIn("cpu_supports_avx512f", m.__all__)
         self.assertIn("cpu_supports_f16c", m.__all__)
 
 
@@ -35,6 +36,11 @@ class TestCpuFeaturesRuntime(ExtTestCase):
         from yaourt.ortops import cpu_supports_f16c
 
         self.assertIsInstance(cpu_supports_f16c(), bool)
+
+    def test_cpu_supports_avx512f_returns_bool(self):
+        from yaourt.ortops import cpu_supports_avx512f
+
+        self.assertIsInstance(cpu_supports_avx512f(), bool)
 
 
 if __name__ == "__main__":
