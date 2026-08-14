@@ -59,7 +59,7 @@ jobs:
                --directory . \
                --output-file coverage_cpp_raw.info \
                --gcov-tool gcov \
-               --ignore-errors mismatch
+               --ignore-errors mismatch,negative
           lcov --remove coverage_cpp_raw.info \
                '/usr/*' \
                '*/onnxruntime*' \
